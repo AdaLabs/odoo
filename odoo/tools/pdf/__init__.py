@@ -413,7 +413,7 @@ class OdooPdfFileWriter(PdfFileWriter):
         self.addAttachment(attachment.name, attachment.raw, subtype=subtype or attachment.mimetype)
 
     def cloneReaderDocumentRoot(self, reader):
-        super().cloneReaderDocumentRoot(reader)
+        super().clone_reader_document_root(reader)
         self._reader = reader
         # Try to read the header coming in, and reuse it in our new PDF
         # This is done in order to allows modifying PDF/A files after creating them (as PyPDF does not read it)
