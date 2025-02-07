@@ -379,10 +379,10 @@ class OdooPdfFileWriter(PdfFileWriter):
         })
         if self._root_object.get('/Names') and self._root_object['/Names'].get('/EmbeddedFiles'):
             names_array = self._root_object["/Names"]["/EmbeddedFiles"]["/Names"]
-            names_array.extend([attachment.getObject()['/F'], attachment])
+            names_array.extend([attachment.get_object()['/F'], attachment])
         else:
             names_array = ArrayObject()
-            names_array.extend([attachment.getObject()['/F'], attachment])
+            names_array.extend([attachment.get_object()['/F'], attachment])
 
             embedded_files_names_dictionary = DictionaryObject()
             embedded_files_names_dictionary.update({
@@ -477,7 +477,7 @@ class OdooPdfFileWriter(PdfFileWriter):
             icc_profile_file_data = compress(icc_profile.read())
 
         icc_profile_stream_obj = DecodedStreamObject()
-        icc_profile_stream_obj.setData(icc_profile_file_data)
+        icc_profile_stream_obj.set_data(icc_profile_file_data)
         icc_profile_stream_obj.update({
             NameObject("/Filter"): NameObject("/FlateDecode"),
             NameObject("/N"): NumberObject(3),
@@ -555,7 +555,7 @@ class OdooPdfFileWriter(PdfFileWriter):
         footer = b'<?xpacket end="w"?>'
         metadata = b'%s%s%s' % (header, metadata_content, footer)
         file_entry = DecodedStreamObject()
-        file_entry.setData(metadata)
+        file_entry.set_data(metadata)
         file_entry.update({
             NameObject("/Type"): NameObject("/Metadata"),
             NameObject("/Subtype"): NameObject("/XML"),
@@ -576,7 +576,7 @@ class OdooPdfFileWriter(PdfFileWriter):
         :return:
         '''
         file_entry = DecodedStreamObject()
-        file_entry.setData(attachment['content'])
+        file_entry.set_data(attachment['content'])
         file_entry.update({
             NameObject("/Type"): NameObject("/EmbeddedFile"),
             NameObject("/Params"):
