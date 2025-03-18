@@ -1281,3 +1281,29 @@ class TestLeaveRequests(TestHrHolidaysCommon):
 
         self.assertEqual(modified_leave.request_date_from, two_days_after)
         self.assertEqual(modified_leave.request_date_to, two_days_after)
+
+    def test_time_off_refusal(self):
+        self.holidays_type_4.responsible_ids = False
+        test_holiday_1 = self.env['hr.leave'].create({
+            'name': 'Test leave',
+            'employee_id': self.employee_emp_id,
+            'holiday_status_id': self.holidays_type_4.id,
+            'date_from': datetime.today(),
+            'date_to': (datetime.today() + timedelta(days=1)),
+            'number_of_days': 1,
+            'state': 'confirm',
+        })
+        self.assertEqual(test_holiday_1.validation_type, 'both', "Validation_type should be set")
+        self.assertEqual(test_holiday_1.state, 'confirm', "State should be set")
+        self.assertEqual(test_holiday_1.employee_id.leave_manager_id, self.employee_hrmanager.leave_manager_id, "Approver should be the Employee's Approver.")
+
+        test_holiday_1.with_user(self.user_hruser_id).action_approve()
+
+        self.assertEqual(test_holiday_1.state, 'validate1', "State should be updated on first approval")
+        self.assertEqual(test_holiday_1.first_approver_id, self.user_hruser.employee_id, "First approver should be correctly set on first approval")
+
+        test_holiday_1.with_user(self.user_hrmanager_id).action_refuse()
+
+        self.assertEqual(test_holiday_1.state, 'refuse', "State should be updated on second approval")
+        self.assertEqual(test_holiday_1.first_approver_id, self.employee_emp.leave_manager_id.employee_id, "First approver should be unchanged on second approval")
+        self.assertEqual(test_holiday_1.second_approver_id, self.user_hrmanager.employee_id, "Second approver should be correctly set on second approval")

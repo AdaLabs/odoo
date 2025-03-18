@@ -1099,8 +1099,8 @@ Attempting to double-book your time off won't magically make your vacation 2x be
 
         self._notify_manager()
         validated_holidays = self.filtered(lambda hol: hol.state == 'validate1')
-        validated_holidays.write({'state': 'refuse', 'first_approver_id': current_employee.id})
-        (self - validated_holidays).write({'state': 'refuse', 'second_approver_id': current_employee.id})
+        validated_holidays.write({'state': 'refuse', 'second_approver_id': current_employee.id})
+        (self - validated_holidays).write({'state': 'refuse', 'first_approver_id': current_employee.id})
         # Delete the meeting
         self.mapped('meeting_id').write({'active': False})
         # Post a second message, more verbose than the tracking message
