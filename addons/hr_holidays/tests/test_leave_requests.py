@@ -1288,8 +1288,8 @@ class TestLeaveRequests(TestHrHolidaysCommon):
             'name': 'Test leave',
             'employee_id': self.employee_emp_id,
             'holiday_status_id': self.holidays_type_4.id,
-            'date_from': datetime.today(),
-            'date_to': (datetime.today() + timedelta(days=1)),
+            'request_date_from': datetime.today(),
+            'request_date_to': (datetime.today() + timedelta(days=1)),
             'number_of_days': 1,
             'state': 'confirm',
         })
