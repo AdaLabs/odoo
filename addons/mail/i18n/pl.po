@@ -5,17 +5,17 @@
 # Translators:
 # Tadeusz Karpiński <tadeuszkarpinski@gmail.com>, 2024
 # Karol Rybak <karolrybak85@gmail.com>, 2024
-# Wil Odoo, 2024
 # Wojciech Warczakowski <w.warczakowski@gmail.com>, 2024
 # Marta Wacławek, 2025
+# Wil Odoo, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:02+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
-"Last-Translator: Marta Wacławek, 2025\n"
+"Last-Translator: Wil Odoo, 2025\n"
 "Language-Team: Polish (https://app.transifex.com/odoo/teams/41243/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -145,6 +145,18 @@ msgstr "%(model_name)s.%(field_path)s nie wydaje się być ważną ścieżką po
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
 msgid "%(name)s: %(message)s)"
 msgstr "%(name)s:%(message)s)"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid ""
+"%(new_line)s%(new_line)sType %(bold_start)s@username%(bold_end)s to mention "
+"someone, and grab their attention.%(new_line)sType "
+"%(bold_start)s#channel%(bold_end)s to mention a channel.%(new_line)sType "
+"%(bold_start)s/command%(bold_end)s to execute a command.%(new_line)sType "
+"%(bold_start)s:shortcut%(bold_end)s to insert a canned response in your "
+"message."
+msgstr ""
 
 #. module: mail
 #. odoo-javascript
@@ -622,6 +634,12 @@ msgstr ""
 "Aktywności."
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid "A scheduled message could not be sent"
+msgstr "Nie udało się wysłać zaplanowanej wiadomości"
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__google_translate_api_key
 msgid ""
 "A valid Google API key is required to enable message translation. "
@@ -1046,7 +1064,7 @@ msgstr "Opcje zaawansowane"
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_plan_template__delay_from__after_plan_date
 msgid "After Plan Date"
-msgstr ""
+msgstr "Po dacie planu"
 
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__account_journal__activity_exception_decoration__warning
@@ -1577,6 +1595,11 @@ msgstr ""
 "skończona."
 
 #. module: mail
+#: model_terms:ir.ui.view,arch_db:mail.mail_activity_plan_view_form
+msgid "Available for all Companies"
+msgstr ""
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/core/common/chat_window.xml:0
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
@@ -1611,7 +1634,7 @@ msgstr "Awatar 512"
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_discuss_channel__avatar_cache_key
 msgid "Avatar Cache Key"
-msgstr ""
+msgstr "Klucz cache awatara"
 
 #. module: mail
 #. odoo-javascript
@@ -1669,7 +1692,7 @@ msgstr ""
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_plan_template__delay_from__before_plan_date
 msgid "Before Plan Date"
-msgstr ""
+msgstr "Przed datą planu"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_thread_blacklist__is_blacklisted
@@ -1807,6 +1830,8 @@ msgid ""
 "Brave: enable 'Google Services for Push Messaging' to enable push "
 "notifications"
 msgstr ""
+"Brave: włącz 'Usługi Google dla Wiadomości Push', aby włączyć powiadomienia "
+"push"
 
 #. module: mail
 #. odoo-javascript
@@ -2219,12 +2244,6 @@ msgstr "Kliknij tutaj aby spróbować ponownie"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Click on your message"
-msgstr "Kliknij na swoją wiadomość"
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
 msgid "Click to see the attachments"
 msgstr "Kliknij aby zobaczyć załączniki"
@@ -2468,8 +2487,11 @@ msgstr "Testowe połączenie nie powiodło się: %s"
 #. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
-msgid "Connection to SFU server closed by the server"
-msgstr "Połączenie z serwerem SFU zamknięte przez serwer"
+msgid ""
+"Connection to SFU server closed by the server, falling back to peer-to-peer"
+msgstr ""
+"Połączenie z serwerem SFU zostało zamknięte przez serwer, powrót do trybu "
+"peer-to-peer"
 
 #. module: mail
 #. odoo-javascript
@@ -3185,7 +3207,7 @@ msgstr "Dyskusja: wyciszenie członka kanału"
 #. module: mail
 #: model:ir.actions.server,name:mail.ir_cron_discuss_users_settings_unmute_ir_actions_server
 msgid "Discuss: users settings unmute"
-msgstr ""
+msgstr "Dyskusje: ustawienia użytkownika cofnij wyciszenie"
 
 #. module: mail
 #: model:ir.model,name:mail.model_discuss_channel
@@ -3384,7 +3406,7 @@ msgstr "Upuść pliki tutaj"
 #: model:ir.model.fields,field_description:mail.field_mail_activity__date_deadline
 #: model:ir.model.fields,field_description:mail.field_mail_activity_schedule__date_deadline
 msgid "Due Date"
-msgstr "Termin Płatności"
+msgstr "Termin"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_ir_actions_server__activity_date_deadline_range
@@ -3880,12 +3902,6 @@ msgstr "Wyjdź z trybu pełnoekranowego"
 #: code:addons/mail/static/src/core/common/message.js:0
 msgid "Expand"
 msgstr "Rozwiń"
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Expand options"
-msgstr "Rozwiń opcje"
 
 #. module: mail
 #. odoo-javascript
@@ -4575,6 +4591,12 @@ msgid "Hostname or IP of the mail server"
 msgstr "Nazwa hosta lub IP serwera pocztowego"
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
+msgid "Hover on your message and mark as todo"
+msgstr "Najedź myszą na swoją wiadomość i oznacz ją jako 'do zrobienia'"
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_users_settings__voice_active_duration
 msgid ""
 "How long the audio broadcast will remain active after passing the volume "
@@ -4586,6 +4608,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
 msgid "ICE Servers"
 msgstr "Serwery ICE"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/discuss/call/common/call_context_menu.xml:0
+msgid "ICE connection:"
+msgstr "Połączenie ICE:"
 
 #. module: mail
 #. odoo-javascript
@@ -6288,14 +6316,6 @@ msgid "Messages Search"
 msgstr "Przeszukiwanie wiadomości"
 
 #. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Messages can be <b>starred</b> to remind you to check back later."
-msgstr ""
-"Wiadomości mogą być <b>oznaczone gwiazdką</b>, aby przypomnieć o późniejszym"
-" sprawdzeniu"
-
-#. module: mail
 #: model:ir.model.constraint,message:mail.constraint_discuss_channel_from_message_id_unique
 msgid "Messages can only be linked to one sub-channel"
 msgstr "Wiadomości mogą być połączone tylko z jednym kanałem podrzędnym"
@@ -7766,7 +7786,7 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/mail/static/src/chatter/web/chatter.xml:0
 msgid "Pop out Attachments"
-msgstr ""
+msgstr "Wyskakujące załączniki"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_fetchmail_server__port
@@ -8076,7 +8096,7 @@ msgstr "Gotowe do wysłania"
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/core/public_web/bus_connection_alert.xml:0
 msgid "Real-time connection lost..."
-msgstr ""
+msgstr "Utracono połączenie w czasie rzeczywistym..."
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_blacklist_remove__reason
@@ -9639,6 +9659,8 @@ msgid ""
 "The 'To-Do' activity type is used to create reminders from the top bar menu "
 "and the command palette. Consequently, it cannot be archived or deleted."
 msgstr ""
+"Typ aktywności \"do zrobienia\" jest używany to tworzenia przypomnień z "
+"górnego menu i palety poleceń. Nie może być zarchiwizowany ani usunięty."
 
 #. module: mail
 #. odoo-javascript
@@ -9654,6 +9676,9 @@ msgid ""
 "Push-to-Talk functionality outside of this tab, we recommend downloading our"
 " %(anchor_start)sextension%(anchor_end)s."
 msgstr ""
+"Funkcja push-to-talk jest dostępna jedynie w obrębie aktywnej karty. Aby "
+"zaktywować funkcję push-to-talk poza tą kartą, zalecamy pobranie naszego "
+"%(anchor_start)srozszerzenia%(anchor_end)s."
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_res_partner__vat
@@ -9794,6 +9819,16 @@ msgid ""
 msgstr ""
 "Poniższa wiadomość nie mogła zostać zaakceptowana przez adres %(alias_display_name)s.\n"
 "Spróbuj ponownie później lub skontaktuj się z %(company_name)s."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid ""
+"The message scheduled on %(model)s(%(id)s) with the following content could "
+"not be sent:%(original_message)s"
+msgstr ""
+"Wiadomość zaplanowana na %(model)s(%(id)s) z następującą treścią nie mogła "
+"zostać wysłana: %(original_message)s"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel__from_message_id
@@ -10847,6 +10882,12 @@ msgid "Username"
 msgstr "Nazwa użytkownika"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "Users in this channel: %(members)s."
+msgstr "Użytkownicy w tym kanale: %(members)s"
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__restrict_template_rendering
 msgid ""
 "Users will still be able to render templates.\n"
@@ -11194,6 +11235,24 @@ msgid ""
 msgstr ""
 "Zamierzasz opuścić tę grupę i nie będziesz miał już do niej dostępu, chyba "
 "że zostaniesz ponownie zaproszony. Jesteś pewien, że chcesz kontynuować?"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in a private conversation."
+msgstr "Jesteś sam w prywatnej rozmowie."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in this channel."
+msgstr "Jesteś sam na tym kanale."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are in a private conversation with %(member_names)s."
+msgstr "Jesteś w trakcie prywatnej rozmowy z %(member_names)s."
 
 #. module: mail
 #. odoo-python
@@ -11864,6 +11923,12 @@ msgid "months"
 msgstr "miesiące"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "more"
+msgstr "więcej"
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/chatter/web/mail_composer_schedule_dialog.xml:0
 msgid "morning"
@@ -12065,6 +12130,12 @@ msgstr "obsługa komunikatów websocket"
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_type__delay_unit__weeks
 msgid "weeks"
 msgstr "tygodni"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "you"
+msgstr "ty"
 
 #. module: mail
 #. odoo-python

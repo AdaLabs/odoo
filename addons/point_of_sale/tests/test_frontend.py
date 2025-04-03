@@ -763,7 +763,7 @@ class TestUi(TestPointOfSaleHttpCommon):
         })
 
         self.env['product.product'].create({
-            'name': 'Product Test 1.2',
+            'name': 'Product Test 1.20',
             'available_in_pos': True,
             'list_price': 1.2,
             'taxes_id': False,
@@ -1430,7 +1430,7 @@ class TestUi(TestPointOfSaleHttpCommon):
             "state_id": self.env.ref("base.state_us_30").id,  # Ohio
             "country_id": self.env.ref("base.us").id,
             "zip": "26432685463",
-            "phone": "1234567890",
+            "phone": "9898989899",
             "mobile": "0987654321",
             "email": "john@doe.com"
         })
@@ -1504,20 +1504,15 @@ class TestUi(TestPointOfSaleHttpCommon):
     def test_product_categories_order(self):
         """ Verify that the order of categories doesnt change in the frontend """
         self.env['pos.category'].search([]).write({'sequence': 100})
-        catgA = self.env['pos.category'].create({
+        self.env['pos.category'].create({
             'name': 'AAA',
             'parent_id': False,
             'sequence': 1,
         })
-        catgB = self.env['pos.category'].create({
+        self.env['pos.category'].create({
             'name': 'AAC',
             'parent_id': False,
             'sequence': 3,
-        })
-        self.env['pos.category'].create({
-            'name': 'AAD',
-            'parent_id': False,
-            'sequence': 4,
         })
         parentA = self.env['pos.category'].create({
             'name': 'AAB',
@@ -1528,7 +1523,7 @@ class TestUi(TestPointOfSaleHttpCommon):
             'name': 'AAX',
             'parent_id': parentA.id,
         })
-        catgC = self.env['pos.category'].create({
+        self.env['pos.category'].create({
             'name': 'AAY',
             'parent_id': parentB.id,
         })
@@ -1536,7 +1531,7 @@ class TestUi(TestPointOfSaleHttpCommon):
         # It's presence is checked during the tour to make sure app doesn't crash.
         self.env['product.product'].create({
             'name': 'Product in AAB and AAX',
-            'pos_categ_ids': [(6, 0, [parentA.id, parentB.id, catgA.id, catgB.id, catgC.id])],
+            'pos_categ_ids': [(6, 0, [parentA.id, parentB.id])],
             'available_in_pos': True,
         })
         self.main_pos_config.with_user(self.pos_admin).open_ui()
@@ -1558,6 +1553,27 @@ class TestUi(TestPointOfSaleHttpCommon):
         self.main_pos_config.with_user(self.pos_user).open_ui()
         self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, "AutofillCashCount", login="pos_user")
 
+    def test_product_search_2(self):
+        self.env['product.product'].create({
+            'name': 'Test chair 1',
+            'available_in_pos': True,
+        })
+        self.env['product.product'].create({
+            'name': 'Test CHAIR 2',
+            'available_in_pos': True,
+        })
+        self.env['product.product'].create({
+            'name': 'Test sofa',
+            'available_in_pos': True,
+            "default_code": "CHAIR_01",
+        })
+        self.env['product.product'].create({
+            'name': 'clémentine',
+            'available_in_pos': True,
+        })
+        self.main_pos_config.open_ui()
+        self.start_tour(f"/pos/ui?config_id={self.main_pos_config.id}", 'SearchProducts', login="pos_user")
+
     def test_lot(self):
         self.product1 = self.env['product.product'].create({
             'name': 'Product A',
@@ -1566,6 +1582,19 @@ class TestUi(TestPointOfSaleHttpCommon):
             'categ_id': self.env.ref('product.product_category_all').id,
             'available_in_pos': True,
         })
+        product2 = self.env['product.product'].create({
+            'name': 'Product B',
+            'is_storable': True,
+            'tracking': 'lot',
+            'categ_id': self.env.ref('product.product_category_all').id,
+            'available_in_pos': True,
+        })
+        self.env['stock.quant'].with_context(inventory_mode=True).create({
+            'product_id': product2.id,
+            'inventory_quantity': 1,
+            'location_id': self.env.user._get_default_warehouse_id().lot_stock_id.id,
+            'lot_id': self.env['stock.lot'].create({'name': '1001', 'product_id': product2.id}).id,
+        }).sudo().action_apply_inventory()
 
         self.main_pos_config.with_user(self.pos_user).open_ui()
         self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'LotTour', login="pos_user")
@@ -1612,6 +1641,132 @@ class TestUi(TestPointOfSaleHttpCommon):
             self.main_pos_config.with_user(self.pos_user).open_ui()
             self.start_tour(f"/pos/ui?config_id={self.main_pos_config.id}", 'SearchMoreCustomer', login="pos_user")
 
+    def test_tracking_number_closing_session(self):
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour(f"/pos/ui?config_id={self.main_pos_config.id}", 'test_tracking_number_closing_session', login="pos_user")
+        for order in self.env['pos.order'].search([]):
+            self.assertEqual(int(order.tracking_number) % 100, 1)
+
+    def test_product_card_qty_precision(self):
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour(f"/pos/ui?config_id={self.main_pos_config.id}", 'ProductCardUoMPrecision', login="pos_user")
+
+    def test_add_multiple_serials_at_once(self):
+        self.product_a = self.env['product.product'].create({
+            'name': 'Product A',
+            'is_storable': True,
+            'tracking': 'serial',
+            'categ_id': self.env.ref('product.product_category_all').id,
+            'available_in_pos': True,
+        })
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, "AddMultipleSerialsAtOnce", login="pos_user")
+
+    def test_order_and_invoice_amounts(self):
+        payment_term = self.env['account.payment.term'].create({
+            'name': "early_payment_term",
+            'discount_percentage': 10,
+            'discount_days': 10,
+            'early_discount': True,
+            'early_pay_discount_computation': 'mixed',
+            'line_ids': [Command.create({
+                'value': 'percent',
+                'nb_days': 0,
+                'value_amount': 100,
+            })]
+        })
+        self.partner_test_1.property_payment_term_id = payment_term.id
+
+        tax = self.env['account.tax'].create({
+            'name': 'Tax 10%',
+            'amount': 10,
+            'amount_type': 'percent',
+            'type_tax_use': 'sale',
+        })
+        self.env['product.product'].create({
+            'name': 'Product Test',
+            'available_in_pos': True,
+            'list_price': 1000,
+            'taxes_id': [(6, 0, [tax.id])],
+        })
+
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'PaymentScreenInvoiceOrder', login="pos_user")
+
+        order = self.env['pos.order'].search([('partner_id', '=', self.partner_test_1.id)], limit=1)
+        self.assertTrue(order)
+
+        self.assertEqual(order.partner_id, self.partner_test_1)
+
+        invoice = self.env['account.move'].search([('invoice_origin', '=', order.name)], limit=1)
+        self.assertTrue(invoice)
+        self.assertFalse(invoice.invoice_payment_term_id) 
+
+        self.assertAlmostEqual(order.amount_total, invoice.amount_total, places=2, msg="Order and Invoice amounts do not match.")
+
+    def test_zero_decimal_places_currency(self):
+        zero_decimal_currency = self.env['res.currency'].create({
+            'name': 'ZeroDecimalCurrency',
+            'symbol': 'ZDC',
+            'rounding': 1.0,
+            'decimal_places': 0,
+        })
+
+        self.env.user.company_id.currency_id = zero_decimal_currency
+        self.main_pos_config.available_pricelist_ids.write({'currency_id': zero_decimal_currency.id})
+
+        self.env['product.product'].create({
+            'name': 'Test Product',
+            'list_price': 100,
+            'taxes_id': False,
+            'available_in_pos': True,
+        })
+
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'test_zero_decimal_places_currency', login="pos_user")
+
+    def test_limited_categories(self):
+        parent_category = self.env['pos.category'].create({
+            'name': 'Parent',
+        })
+        child_category_1 = self.env['pos.category'].create({
+            'name': 'Child 1',
+            'parent_id': parent_category.id,
+        })
+        child_category_2 = self.env['pos.category'].create({
+            'name': 'Child 2',
+            'parent_id': parent_category.id,
+        })
+        self.env['product.product'].create({
+            'name': 'Product 1',
+            'available_in_pos': True,
+            'list_price': 1.20,
+            'taxes_id': False,
+            'pos_categ_ids': [(4, child_category_1.id)],
+        })
+        self.env['product.product'].create({
+            'name': 'Product 2',
+            'available_in_pos': True,
+            'list_price': 2.30,
+            'taxes_id': False,
+            'pos_categ_ids': [(4, child_category_2.id)],
+        })
+        self.main_pos_config.write({
+            'limit_categories': True,
+            'iface_available_categ_ids': [(6, 0, [parent_category.id, child_category_1.id, child_category_2.id])],
+        })
+
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'test_limited_categories', login="pos_user")
+
+        self.main_pos_config.current_session_id.close_session_from_ui()
+
+        # when no category is selected, all products should be displayed
+        self.main_pos_config.write({
+            'iface_available_categ_ids': [(6, 0, [])],
+        })
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_tour("/pos/ui?config_id=%d" % self.main_pos_config.id, 'test_limited_categories', login="pos_user")
 
 # This class just runs the same tests as above but with mobile emulation
 class MobileTestUi(TestUi):

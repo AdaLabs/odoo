@@ -4,15 +4,16 @@
 # 
 # Translators:
 # Martin Trigaux, 2024
-# Wil Odoo, 2024
 # Mustafa J. Kadhem <safi2266@gmail.com>, 2024
+# egyptian <oepc.org@gmail.com>, 2025
+# Wil Odoo, 2025
 # Malaz Abuidris <msea@odoo.com>, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:02+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
 "Last-Translator: Malaz Abuidris <msea@odoo.com>, 2025\n"
 "Language-Team: Arabic (https://app.transifex.com/odoo/teams/41243/ar/)\n"
@@ -146,6 +147,23 @@ msgstr "لا يبدو أن %(model_name)s.%(field_path)s مسار حقل صال�
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
 msgid "%(name)s: %(message)s)"
 msgstr "%(name)s: %(message)s)"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid ""
+"%(new_line)s%(new_line)sType %(bold_start)s@username%(bold_end)s to mention "
+"someone, and grab their attention.%(new_line)sType "
+"%(bold_start)s#channel%(bold_end)s to mention a channel.%(new_line)sType "
+"%(bold_start)s/command%(bold_end)s to execute a command.%(new_line)sType "
+"%(bold_start)s:shortcut%(bold_end)s to insert a canned response in your "
+"message."
+msgstr ""
+"%(new_line)s%(new_line)sاكتب %(bold_start)s@username%(bold_end)s للإشارة إلى"
+" شخص ما للفت انتباهه.%(new_line)sاكتب %(bold_start)s#channel%(bold_end)s "
+"للإشارة إلى القناة.%(new_line)sاكتب %(bold_start)s/command%(bold_end)s "
+"لتنفيذ أمر ما. اكتب %(bold_start)s:shortcut%(bold_end)s لإدراج رد جاهز في "
+"رسالتك. "
 
 #. module: mail
 #. odoo-javascript
@@ -612,6 +630,12 @@ msgstr "يجب أن يكون تعبير الرسالة من شريك أو من �
 #: code:addons/mail/models/ir_actions_server.py:0
 msgid "A next activity can only be planned on models that use activities."
 msgstr "لا يمكن التخطيط للنشاط التالي إلا في النماذج التي تستخدم الأنشطة. "
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid "A scheduled message could not be sent"
+msgstr "تعذر إرسال إحدى الرسائل المجدولة "
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__google_translate_api_key
@@ -1568,6 +1592,11 @@ msgid ""
 msgstr "قم بجدولة هذا النشاط تلقائياً بمجرد انتهاء النشاط الحالي. "
 
 #. module: mail
+#: model_terms:ir.ui.view,arch_db:mail.mail_activity_plan_view_form
+msgid "Available for all Companies"
+msgstr "متاح لكافة الشركات  "
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/core/common/chat_window.xml:0
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
@@ -2204,12 +2233,6 @@ msgstr "اضغط هنا لإعادة المحاولة "
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Click on your message"
-msgstr "اضغط على رسالتك "
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
 msgid "Click to see the attachments"
 msgstr "إغلاق "
@@ -2294,7 +2317,7 @@ msgstr "قم بجمع الردود في عنوان بريد محدد "
 #. odoo-javascript
 #: code:addons/mail/static/src/core/web/messaging_menu_patch.js:0
 msgid "Come here often? Install the app for quick and easy access!"
-msgstr ""
+msgstr "هل تأتي إلى هنا كثيراً؟ قم بتثبيت التطبيق للوصول السريع والسهل! "
 
 #. module: mail
 #: model_terms:ir.ui.view,arch_db:mail.email_template_form
@@ -2451,8 +2474,11 @@ msgstr "فشل اختبار الاتصال: %s"
 #. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
-msgid "Connection to SFU server closed by the server"
-msgstr "تم إغلاق الاتصال بخوادم SFU بواسطة الخادم "
+msgid ""
+"Connection to SFU server closed by the server, falling back to peer-to-peer"
+msgstr ""
+"تم إغلاق الاتصال بخادم SFU من قِبَل الخادم، مما أدى إلى العودة إلى الاتصال "
+"من نظير إلى نظير "
 
 #. module: mail
 #. odoo-javascript
@@ -3355,7 +3381,7 @@ msgstr "أسقط الملفات هنا "
 #: model:ir.model.fields,field_description:mail.field_mail_activity__date_deadline
 #: model:ir.model.fields,field_description:mail.field_mail_activity_schedule__date_deadline
 msgid "Due Date"
-msgstr "موعد إجراء المكالمة "
+msgstr "تاريخ الاستحقاق"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_ir_actions_server__activity_date_deadline_range
@@ -3711,7 +3737,7 @@ msgstr "للموظفين فقط "
 #. odoo-javascript
 #: code:addons/mail/static/src/core/web/messaging_menu_patch.xml:0
 msgid "Enable"
-msgstr ""
+msgstr "تمكين "
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_ir_model_fields__tracking
@@ -3850,12 +3876,6 @@ msgstr "مغادرة وضع ملء الشاشة "
 #: code:addons/mail/static/src/core/common/message.js:0
 msgid "Expand"
 msgstr "توسيع "
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Expand options"
-msgstr "توسيع الخيارات "
 
 #. module: mail
 #. odoo-javascript
@@ -4544,6 +4564,12 @@ msgid "Hostname or IP of the mail server"
 msgstr "اسم الجهاز أو عنوان IP لخادم البريد "
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
+msgid "Hover on your message and mark as todo"
+msgstr "قم بالتمرير فوق رسالتك وتعيينها كمهمة يجب القيام بها "
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_users_settings__voice_active_duration
 msgid ""
 "How long the audio broadcast will remain active after passing the volume "
@@ -4555,6 +4581,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
 msgid "ICE Servers"
 msgstr "خوادم ICE "
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/discuss/call/common/call_context_menu.xml:0
+msgid "ICE connection:"
+msgstr "اتصال ICE: "
 
 #. module: mail
 #. odoo-javascript
@@ -6241,12 +6273,6 @@ msgstr "الرسائل"
 #: model_terms:ir.ui.view,arch_db:mail.view_message_search
 msgid "Messages Search"
 msgstr "البحث في الرسائل"
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Messages can be <b>starred</b> to remind you to check back later."
-msgstr "يمكن تمييز الرسائل <b>بنجمة</b> لتذكيرك بالرجوع إليها لاحقًا."
 
 #. module: mail
 #: model:ir.model.constraint,message:mail.constraint_discuss_channel_from_message_id_unique
@@ -9736,6 +9762,16 @@ msgstr ""
 "يرجى المحاولة مجدداً لاحقاً أو التواصل مع %(company_name)s عوضاً عن ذلك. "
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid ""
+"The message scheduled on %(model)s(%(id)s) with the following content could "
+"not be sent:%(original_message)s"
+msgstr ""
+"تعذر إرسال الرسالة المجدولة في %(model)s(%(id)s) ذات المحتوى التالي: "
+"%(original_message)s "
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel__from_message_id
 msgid "The message the channel was created from."
 msgstr "الرسالة التي تم إنشاء القناة منها "
@@ -9949,6 +9985,8 @@ msgid ""
 "This setting will be applied to all channels using the default notification "
 "settings."
 msgstr ""
+"سيتم تطبيق هذا الإعداد على كافة القنوات باستخدام الإعدادات الافتراضية "
+"للإشعارات. "
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_res_users_settings__channel_notifications
@@ -10781,6 +10819,12 @@ msgid "Username"
 msgstr "اسم المستخدم"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "Users in this channel: %(members)s."
+msgstr "المستخدمون في هذه القناة: %(members)s. "
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__restrict_template_rendering
 msgid ""
 "Users will still be able to render templates.\n"
@@ -11131,6 +11175,24 @@ msgstr ""
 #. module: mail
 #. odoo-python
 #: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in a private conversation."
+msgstr "أنت وحدك في محادثة خاصة. "
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in this channel."
+msgstr "أنت وحدك في هذه القناة."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are in a private conversation with %(member_names)s."
+msgstr "أنت في محادثة خاصة مع %(member_names)s. "
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
 msgid "You are in channel %(bold_start)s#%(channel_name)s%(bold_end)s."
 msgstr "أنت في القناة %(bold_start)s#%(channel_name)s%(bold_end)s. "
 
@@ -11145,7 +11207,7 @@ msgstr "لم تعد تتابع \"%(thread_name)s\" "
 #: code:addons/mail/models/mail_scheduled_message.py:0
 msgid ""
 "You are not allowed to change the target record of a scheduled message."
-msgstr ""
+msgstr "لا يُسمح لك بتغيير السجل المستهدف لرسالة تمت جدولتها. "
 
 #. module: mail
 #. odoo-python
@@ -11797,6 +11859,12 @@ msgid "months"
 msgstr "شهور"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "more"
+msgstr "المزيد "
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/chatter/web/mail_composer_schedule_dialog.xml:0
 msgid "morning"
@@ -11995,6 +12063,12 @@ msgstr "التعامل مع رسائل websocket "
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_type__delay_unit__weeks
 msgid "weeks"
 msgstr "أسابيع"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "you"
+msgstr "إليك "
 
 #. module: mail
 #. odoo-python

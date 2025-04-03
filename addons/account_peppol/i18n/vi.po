@@ -3,16 +3,16 @@
 # 	* account_peppol
 # 
 # Translators:
-# Thi Huong Nguyen, 2024
 # Wil Odoo, 2025
+# Thi Huong Nguyen, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:03+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
-"Last-Translator: Wil Odoo, 2025\n"
+"Last-Translator: Thi Huong Nguyen, 2025\n"
 "Language-Team: Vietnamese (https://app.transifex.com/odoo/teams/41243/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,8 +23,32 @@ msgstr ""
 #. module: account_peppol
 #. odoo-python
 #: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
-msgid "%s (customer not on Peppol)"
-msgstr "%s (khách hàng không có trên Peppol)"
+msgid " (Customer not on Peppol)"
+msgstr "(Khách hàng không có trên Peppol)"
+
+#. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
+msgid " (Demo)"
+msgstr ""
+
+#. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
+msgid " (Test)"
+msgstr ""
+
+#. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
+msgid " (no VAT)"
+msgstr ""
+
+#. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
+msgid "%(peppol_label)s%(disable_reason)s%(peppol_proxy_mode)s"
+msgstr "%(peppol_label)s%(disable_reason)s%(peppol_proxy_mode)s"
 
 #. module: account_peppol
 #. odoo-python
@@ -424,7 +448,7 @@ msgstr "Hoàn toàn tự động"
 #. odoo-javascript
 #: code:addons/account_peppol/static/src/components/peppol_info/peppol_info.js:0
 msgid "Got it !"
-msgstr ""
+msgstr "Đã hiểu!"
 
 #. module: account_peppol
 #: model_terms:ir.ui.view,arch_db:account_peppol.res_config_settings_view_form
@@ -530,7 +554,7 @@ msgstr "Số điện thoại"
 #. module: account_peppol
 #: model:ir.model.fields.selection,name:account_peppol.selection__res_partner__peppol_verification_state__not_valid
 msgid "Not on Peppol"
-msgstr ""
+msgstr "Không có trên Peppol"
 
 #. module: account_peppol
 #: model:ir.model.fields.selection,name:account_peppol.selection__res_company__account_peppol_proxy_state__not_registered
@@ -632,6 +656,12 @@ msgstr ""
 "gửi trên Peppol</b>."
 
 #. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/account_move_send_wizard.py:0
+msgid "Partner doesn't have a valid Peppol configuration."
+msgstr "Đối tác không có cấu hình Peppol hợp lệ."
+
+#. module: account_peppol
 #: model:ir.model.fields.selection,name:account_peppol.selection__account_move__peppol_move_state__processing
 msgid "Pending Reception"
 msgstr "Chờ tiếp nhận"
@@ -674,7 +704,7 @@ msgstr "Wizard dịch vụ Peppol"
 #. odoo-python
 #: code:addons/account_peppol/models/account_edi_proxy_user.py:0
 msgid "Peppol document (UUID: %(uuid)s) has been received successfully"
-msgstr ""
+msgstr "Chứng từ Peppol (UUID: %(uuid)s) đã được nhận thành công"
 
 #. module: account_peppol
 #: model_terms:ir.ui.view,arch_db:account_peppol.portal_my_details_fields
@@ -699,12 +729,6 @@ msgstr "Xác minh endpoint Peppol"
 #: code:addons/account_peppol/models/account_edi_proxy_user.py:0
 msgid "Peppol error: %s"
 msgstr "Lỗi Peppol: %s"
-
-#. module: account_peppol
-#. odoo-python
-#: code:addons/account_peppol/models/account_move_send.py:0
-msgid "Peppol is in testing/demo mode."
-msgstr "Peppol đang trong chế độ kiểm thử/demo."
 
 #. module: account_peppol
 #: model_terms:ir.ui.view,arch_db:account_peppol.account_journal_dashboard_kanban_view
@@ -799,21 +823,9 @@ msgstr "Đăng ký làm bên nhận"
 
 #. module: account_peppol
 #. odoo-python
-#: code:addons/account_peppol/wizard/peppol_registration.py:0
-msgid "Registered as a receiver."
-msgstr "Đăng ký làm bên nhận."
-
-#. module: account_peppol
-#. odoo-python
 #: code:addons/account_peppol/tools/demo_utils.py:0
 msgid "Registered as a sender (demo)."
 msgstr "Đăng ký làm bên gửi (demo)."
-
-#. module: account_peppol
-#. odoo-python
-#: code:addons/account_peppol/wizard/peppol_registration.py:0
-msgid "Registered as a sender."
-msgstr "Đăng ký làm bên gửi."
 
 #. module: account_peppol
 #. odoo-python
@@ -824,7 +836,6 @@ msgstr "Đã đăng ký nhận chứng từ qua Peppol (demo)."
 #. module: account_peppol
 #. odoo-python
 #: code:addons/account_peppol/models/res_config_settings.py:0
-#: code:addons/account_peppol/wizard/peppol_registration.py:0
 msgid "Registered to receive documents via Peppol."
 msgstr "Đã đăng ký nhận chứng từ qua Peppol."
 
@@ -960,12 +971,11 @@ msgstr ""
 "tế."
 
 #. module: account_peppol
-#: code:addons/account_peppol/wizard/peppol_registration.py:0
 #: model_terms:ir.ui.view,arch_db:account_peppol.res_partner_form_account_peppol
 msgid ""
 "The recommended identification method for Belgium is your Company Registry "
 "Number."
-msgstr ""
+msgstr "Phương thức định danh được đề xuất cho Bỉ là Mã số đăng ký công ty."
 
 #. module: account_peppol
 #: model:ir.model.fields,help:account_peppol.field_res_config_settings__account_peppol_edi_identification
@@ -985,6 +995,8 @@ msgid ""
 "This feature is deprecated. Contact odoo support if you need a migration "
 "key."
 msgstr ""
+"Tính năng này không còn được sử dụng. Liên hệ với bộ phận hỗ trợ của Odoo "
+"nếu bạn cần khóa di chuyển."
 
 #. module: account_peppol
 #. odoo-python
@@ -1065,6 +1077,8 @@ msgid ""
 "We could not find a user with this information on our server. Please check "
 "your information."
 msgstr ""
+"Chúng tôi không thể tìm thấy người dùng có thông tin này trên máy chủ của "
+"bạn. Vui lòng kiểm tra lại."
 
 #. module: account_peppol
 #. odoo-javascript
@@ -1117,7 +1131,7 @@ msgstr "Giờ đây bạn có thể gửi hoá đơn ở chế độ demo."
 #. odoo-python
 #: code:addons/account_peppol/models/account_move_send.py:0
 msgid "You can send this invoice electronically via Peppol."
-msgstr ""
+msgstr "Bạn có thể gửi hóa đơn này qua Peppol theo phương thức điện tử."
 
 #. module: account_peppol
 #: model_terms:ir.ui.view,arch_db:account_peppol.res_config_settings_view_form
@@ -1151,6 +1165,22 @@ msgid "Your Peppol ID"
 msgstr "ID Peppol của bạn"
 
 #. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/peppol_registration.py:0
+msgid ""
+"Your Peppol registration will be activated soon. You can already send "
+"invoices."
+msgstr ""
+
+#. module: account_peppol
+#. odoo-python
+#: code:addons/account_peppol/wizard/peppol_registration.py:0
+msgid ""
+"Your company is already registered on another Access Point for receiving "
+"invoices.We will register you as a sender only."
+msgstr ""
+
+#. module: account_peppol
 #: model_terms:ir.ui.view,arch_db:account_peppol.peppol_registration_form
 msgid "Your endpoint"
 msgstr "Endpoint của bạn"
@@ -1163,7 +1193,6 @@ msgstr "Khoá di chuyển của bạn là:"
 #. module: account_peppol
 #. odoo-python
 #: code:addons/account_peppol/models/res_config_settings.py:0
-#: code:addons/account_peppol/wizard/peppol_registration.py:0
 msgid ""
 "Your registration on Peppol network should be activated within a day. The "
 "updated status will be visible in Settings."

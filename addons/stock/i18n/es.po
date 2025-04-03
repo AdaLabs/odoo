@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:02+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:42+0000\n"
 "Last-Translator: Larissa Manderfeld, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/odoo/teams/41243/es/)\n"
@@ -2247,7 +2247,7 @@ msgstr ""
 #. module: stock
 #: model_terms:ir.ui.view,arch_db:stock.res_config_settings_view_form
 msgid "Create products easily by scanning using"
-msgstr "Cree productos fácilmente por escane con"
+msgstr "Cree productos fácilmente por escanear con"
 
 #. module: stock
 #: model_terms:ir.actions.act_window,help:stock.action_product_stock_view
@@ -4217,12 +4217,6 @@ msgstr "Si no está marcado, permite ocultar la regla sin eliminarla."
 #: model:ir.model.fields,field_description:stock.field_stock_backorder_confirmation_line__backorder_confirmation_id
 msgid "Immediate Transfer"
 msgstr "Traslado inmediato"
-
-#. module: stock
-#. odoo-python
-#: code:addons/stock/models/stock_quant.py:0
-msgid "Import"
-msgstr "Importar"
 
 #. module: stock
 #. odoo-javascript
@@ -6681,11 +6675,12 @@ msgstr "La presencia depende del tipo de operación."
 #. odoo-python
 #: code:addons/stock/models/stock_quant.py:0
 msgid ""
-"Press the CREATE button to define quantity for each product in your stock or"
-" import them from a spreadsheet throughout Favorites"
+"Press the \"New\" button to define the quantity for a product in your stock "
+"or import quantities from a spreadsheet via the Actions menu"
 msgstr ""
-"Pulse el botón CREAR para definir la cantidad de cada producto en su stock o"
-" importarlos desde una hoja de cálculo a través de Favoritos"
+"Haga clic en el botón “Nuevo” para definir la cantidad de un producto en el "
+"stock o importe la cantidad desde una hoja de cálculo a través del menú de "
+"acciones."
 
 #. module: stock
 #. odoo-javascript
@@ -9153,6 +9148,16 @@ msgstr "Este número de lote o de serie (%s) está vinculado a otro producto."
 
 #. module: stock
 #. odoo-python
+#: code:addons/stock/models/stock_picking.py:0
+msgid ""
+"The Picking Operations report has been deleted so you cannot print at this "
+"time unless the report is restored."
+msgstr ""
+"El informe de operaciones de picking ha sido eliminado, por lo que no lo "
+"puede imprimir en estos momentos a menos que se restablezca el informe."
+
+#. module: stock
+#. odoo-python
 #: code:addons/stock/models/stock_quant.py:0
 msgid ""
 "The Serial Number (%(serial_number)s) is already used in location(s): %(location_list)s.\n"
@@ -10814,11 +10819,11 @@ msgstr "Cuando el producto llega a"
 msgid ""
 "When products are needed in <b>%(destination)s</b>, <br> "
 "<b>%(operation)s</b> are created from <b>%(source_location)s</b> to fulfill "
-"the need."
+"the need. %(suffix)s"
 msgstr ""
 "Cuando se requieren productos en <b>%(destination)s</b>, se crean <br> "
 "<b>%(operation)s</b> desde <b>%(source_location)s</b> para cumplir la "
-"demanda."
+"demanda. %(suffix)s"
 
 #. module: stock
 #. odoo-python

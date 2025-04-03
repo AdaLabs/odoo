@@ -28,8 +28,9 @@ import {
     status,
 } from "@odoo/owl";
 import { downloadReport, getReportUrl } from "./reports/utils";
-import { omit, pick, shallowEqual } from "@web/core/utils/objects";
 import { zip } from "@web/core/utils/arrays";
+import { isHtmlEmpty } from "@web/core/utils/html";
+import { omit, pick, shallowEqual } from "@web/core/utils/objects";
 import { session } from "@web/session";
 import { exprToBoolean } from "@web/core/utils/strings";
 
@@ -394,9 +395,7 @@ export function makeActionManager(env, router = _router) {
                 ? evaluateExpr(domain, Object.assign({}, user.context, action.context))
                 : domain;
         if (action.help) {
-            const htmlHelp = document.createElement("div");
-            htmlHelp.innerHTML = action.help;
-            if (!htmlHelp.innerText.trim()) {
+            if (isHtmlEmpty(action.help)) {
                 delete action.help;
             }
         }
@@ -414,6 +413,10 @@ export function makeActionManager(env, router = _router) {
                 // from there or load all fieldviews alongside the action for the sake of consistency
                 const searchViewId = action.search_view_id ? action.search_view_id[0] : false;
                 action.views.push([searchViewId, "search"]);
+            }
+            if ("no_breadcrumbs" in action.context) {
+                action._noBreadcrumbs = action.context.no_breadcrumbs;
+                delete action.context.no_breadcrumbs;
             }
         }
         return action;
@@ -725,8 +728,7 @@ export function makeActionManager(env, router = _router) {
         };
 
         viewProps.noBreadcrumbs =
-            "no_breadcrumbs" in action.context ? action.context.no_breadcrumbs : target === "new";
-        delete action.context.no_breadcrumbs;
+            "_noBreadcrumbs" in action ? action._noBreadcrumbs : target === "new";
 
         const embeddedActions =
             view.type === "form"
@@ -1064,7 +1066,7 @@ export function makeActionManager(env, router = _router) {
             controller.props.globalState = controller.action.globalState;
         }
 
-        const closingProm = _executeCloseAction();
+        const closingProm = _executeCloseAction({ onCloseInfo: { noReload: true } });
 
         if (options.clearBreadcrumbs && !options.noEmptyTransition) {
             const def = new Deferred();

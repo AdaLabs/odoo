@@ -167,6 +167,7 @@ class Project(models.Model):
     # Not `required` since this is an option to enable in project settings.
     stage_id = fields.Many2one('project.project.stage', string='Stage', ondelete='restrict', groups="project.group_project_stages",
         tracking=True, index=True, copy=False, default=_default_stage_id, group_expand='_read_group_expand_full')
+    duration_tracking = fields.Json(groups="project.group_project_stages")
 
     update_ids = fields.One2many('project.update', 'project_id', export_string_translation=False)
     update_count = fields.Integer(compute='_compute_total_update_ids', export_string_translation=False)
@@ -486,11 +487,15 @@ class Project(models.Model):
                 # The project's company_id must be the same as the stage's company_id
                 if stage.company_id:
                     for vals in vals_list:
+                        if vals.get('stage_id'):
+                            continue
                         vals['company_id'] = stage.company_id.id
             else:
                 companies_ids = [vals.get('company_id', False) for vals in vals_list] + [False]
                 stages = self.env['project.project.stage'].search([('company_id', 'in', companies_ids)])
                 for vals in vals_list:
+                    if vals.get('stage_id'):
+                        continue
                     # Pick the stage with the lowest sequence with no company or project's company
                     stage_domain = [False] if 'company_id' not in vals else [False, vals.get('company_id')]
                     stage = stages.filtered(lambda s: s.company_id.id in stage_domain)[:1]

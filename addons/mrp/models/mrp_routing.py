@@ -172,9 +172,11 @@ class MrpRoutingWorkcenter(models.Model):
         # skip operation line if archived
         if not self.active:
             return True
-        if product._name == 'product.template':
+        if not product or product._name == 'product.template':
             return False
-        return not product._match_all_variant_values(self.bom_product_template_attribute_value_ids)
+
+        never_attribute_values = self.env.context.get('never_attribute_ids')
+        return self.env['mrp.bom']._skip_for_no_variant(product, self.bom_product_template_attribute_value_ids, never_attribute_values)
 
     def _get_duration_expected(self, product, quantity, unit=False, workcenter=False):
         product = product or self.bom_id.product_tmpl_id

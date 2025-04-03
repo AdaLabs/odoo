@@ -3,15 +3,15 @@
 # 	* mail
 # 
 # Translators:
-# Wil Odoo, 2024
 # Martin Trigaux, 2024
+# Wil Odoo, 2025
 # Larissa Manderfeld, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:02+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
 "Last-Translator: Larissa Manderfeld, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/odoo/teams/41243/es/)\n"
@@ -144,6 +144,24 @@ msgstr "%(model_name)s.%(field_path)s no parece ser una ruta de campo válida"
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
 msgid "%(name)s: %(message)s)"
 msgstr "%(name)s: %(message)s)"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid ""
+"%(new_line)s%(new_line)sType %(bold_start)s@username%(bold_end)s to mention "
+"someone, and grab their attention.%(new_line)sType "
+"%(bold_start)s#channel%(bold_end)s to mention a channel.%(new_line)sType "
+"%(bold_start)s/command%(bold_end)s to execute a command.%(new_line)sType "
+"%(bold_start)s:shortcut%(bold_end)s to insert a canned response in your "
+"message."
+msgstr ""
+"%(new_line)s%(new_line)sEscriba %(bold_start)s@nombredeusuario%(bold_end)s "
+"para mencionar a alguien.%(new_line)sEscriba "
+"%(bold_start)s#canal%(bold_end)s para mencionar un canal.%(new_line)sEscriba"
+" %(bold_start)s/comando%(bold_end)s para ejecutar un "
+"comando.%(new_line)sEscriba %(bold_start)s:atajo%(bold_end)s para insertar "
+"una respuesta predeterminada en el mensaje. "
 
 #. module: mail
 #. odoo-javascript
@@ -616,6 +634,12 @@ msgid "A next activity can only be planned on models that use activities."
 msgstr ""
 "Solo se puede planificar una siguiente actividad en los modelos que utilizan"
 " actividades."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid "A scheduled message could not be sent"
+msgstr "No se ha podido enviar un mensaje programado"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__google_translate_api_key
@@ -1492,7 +1516,7 @@ msgstr "Reproductor de audio:"
 #. module: mail
 #: model:ir.model.fields.selection,name:mail.selection__mail_alias__alias_contact__partners
 msgid "Authenticated Partners"
-msgstr "Empresas autenticadas"
+msgstr "Contactos autenticados"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_compose_message__author_id
@@ -1576,6 +1600,11 @@ msgid ""
 msgstr ""
 "Programe automáticamente esta actividad una vez que la actual se marque como"
 " hecha."
+
+#. module: mail
+#: model_terms:ir.ui.view,arch_db:mail.mail_activity_plan_view_form
+msgid "Available for all Companies"
+msgstr "Disponible para todas las compañías"
 
 #. module: mail
 #. odoo-javascript
@@ -2224,12 +2253,6 @@ msgstr "Haga clic aquí para volver a intentarlo"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Click on your message"
-msgstr "Haga clic en su mensaje"
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
 msgid "Click to see the attachments"
 msgstr "Haga clic para ver los archivos adjuntos"
@@ -2476,8 +2499,11 @@ msgstr "La prueba de conexión ha fallado: %s"
 #. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
-msgid "Connection to SFU server closed by the server"
-msgstr "Conexión con el servidor SFU cerrada por el servidor"
+msgid ""
+"Connection to SFU server closed by the server, falling back to peer-to-peer"
+msgstr ""
+"El servidor ha cerrado la conexión con el servidor SFU y vuelve a la la red "
+"de pares como alternativa"
 
 #. module: mail
 #. odoo-javascript
@@ -3891,12 +3917,6 @@ msgstr "Expandir"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Expand options"
-msgstr "Abra las opciones"
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/public_web/discuss_sidebar.xml:0
 msgid "Expand panel"
 msgstr "Mostrar panel"
@@ -4586,6 +4606,12 @@ msgid "Hostname or IP of the mail server"
 msgstr "Nombre del host o IP del servidor de correo"
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
+msgid "Hover on your message and mark as todo"
+msgstr "Pase el ratón sobre su mensaje y márquelo como actividad pendiente."
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_users_settings__voice_active_duration
 msgid ""
 "How long the audio broadcast will remain active after passing the volume "
@@ -4598,6 +4624,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
 msgid "ICE Servers"
 msgstr "Servidores ICE"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/discuss/call/common/call_context_menu.xml:0
+msgid "ICE connection:"
+msgstr "Conexión ICE:"
 
 #. module: mail
 #. odoo-javascript
@@ -6308,14 +6340,6 @@ msgstr "Mensajes"
 #: model_terms:ir.ui.view,arch_db:mail.view_message_search
 msgid "Messages Search"
 msgstr "Búsqueda de mensajes"
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Messages can be <b>starred</b> to remind you to check back later."
-msgstr ""
-"Los mensajes pueden ser <b>destacados</b> para que recuerde revisarlos más "
-"tarde."
 
 #. module: mail
 #: model:ir.model.constraint,message:mail.constraint_discuss_channel_from_message_id_unique
@@ -9843,6 +9867,16 @@ msgstr ""
 "Inténtelo de nuevo más tarde o póngase en contacto con %(company_name)s."
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid ""
+"The message scheduled on %(model)s(%(id)s) with the following content could "
+"not be sent:%(original_message)s"
+msgstr ""
+"No se ha podido enviar el mensaje programado en %(model)s(%(id)s) que "
+"contiene el contenido siguiente :%(original_message)s"
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel__from_message_id
 msgid "The message the channel was created from."
 msgstr "El mensaje desde el que se creó el canal."
@@ -10903,6 +10937,12 @@ msgid "Username"
 msgstr "Nombre de usuario"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "Users in this channel: %(members)s."
+msgstr "Usuarios en este canal: %(members)s."
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__restrict_template_rendering
 msgid ""
 "Users will still be able to render templates.\n"
@@ -11254,6 +11294,24 @@ msgid ""
 msgstr ""
 "Está a punto de dejar esta conversación grupal y no volverá a tener acceso a"
 " menos que lo vuelvan a invitar. ¿Está seguro de que desea continuar?"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in a private conversation."
+msgstr "Se encuentra solo en una conversación privada."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in this channel."
+msgstr "Está solo en este canal."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are in a private conversation with %(member_names)s."
+msgstr "Se encuentra en una conversación privada con %(member_names)s."
 
 #. module: mail
 #. odoo-python
@@ -11932,6 +11990,12 @@ msgid "months"
 msgstr "meses"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "more"
+msgstr "más"
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/chatter/web/mail_composer_schedule_dialog.xml:0
 msgid "morning"
@@ -12133,6 +12197,12 @@ msgstr "gestión de mensajes de WebSocket"
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_type__delay_unit__weeks
 msgid "weeks"
 msgstr "semanas"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "you"
+msgstr "usted"
 
 #. module: mail
 #. odoo-python

@@ -560,9 +560,7 @@ class HolidaysType(models.Model):
                         datetime.combine(closest_expiration_date, time.max).replace(tzinfo=pytz.UTC),
                         resources=employee.resource_id
                     )
-                    closest_allocation_dict =\
-                        self.env['resource.calendar']._get_attendance_intervals_days_data(
-                            calendar_attendance[employee.resource_id.id])
+                    closest_allocation_dict = calendar._get_attendance_intervals_days_data(calendar_attendance[employee.resource_id.id])
                     if leave_type.request_unit in ['hour']:
                         closest_allocation_duration = closest_allocation_dict['hours']
                     else:
@@ -602,7 +600,7 @@ class HolidaysType(models.Model):
             carryover_policy = accrual_plan_level.action_with_unused_accruals if accrual_plan_level else False
             carryover_date = False
             if carryover_policy in ['maximum', 'lost']:
-                carryover_date = allocation._get_carryover_date(target_date)
+                carryover_date = allocation.sudo()._get_carryover_date(target_date)
                 # If carry over date == target date, then add 1 year to carry over date.
                 # Rational: for example if carry over date = 01/01 this year and target date = 01/01 this year,
                 # then any accrued days on 01/01 this year will have their carry over date 01/01 next year

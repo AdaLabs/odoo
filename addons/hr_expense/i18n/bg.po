@@ -11,11 +11,11 @@
 # aleksandar ivanov, 2024
 # Ивайло Малинов <iv.malinov@gmail.com>, 2024
 # Albena Mincheva <albena_vicheva@abv.bg>, 2024
-# Rumena Georgieva <rumena.georgieva@gmail.com>, 2024
 # Martin Trigaux, 2024
 # Maria Boyadjieva <marabo2000@gmail.com>, 2024
 # Milena Georgieva, 2024
 # Emil Krastev, 2024
+# Rumena Georgieva <rumena.georgieva@gmail.com>, 2025
 # Veselina Slavkova, 2025
 # 
 msgid ""
@@ -62,7 +62,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/hr_expense/models/hr_expense.py:0
 msgid "%(employee_name)s: %(expense_name)s"
-msgstr ""
+msgstr "%(employee_name)s: %(expense_name)s"
 
 #. module: hr_expense
 #. odoo-python
@@ -649,7 +649,7 @@ msgstr "Име за показване"
 #: model:ir.model.fields,field_description:hr_expense.field_hr_expense__distribution_analytic_account_ids
 #: model:ir.model.fields,field_description:hr_expense.field_hr_expense_split__distribution_analytic_account_ids
 msgid "Distribution Analytic Account"
-msgstr ""
+msgstr "Аналитична сметка за разпределение"
 
 #. module: hr_expense
 #: model_terms:digest.tip,tip_description:hr_expense.digest_tip_hr_expense_0
@@ -1765,7 +1765,7 @@ msgstr ""
 #. module: hr_expense
 #: model:ir.model,name:hr_expense.model_ir_actions_report
 msgid "Report Action"
-msgstr ""
+msgstr "Докладване на действие"
 
 #. module: hr_expense
 #: model:ir.model.fields,field_description:hr_expense.field_hr_expense__company_currency_id

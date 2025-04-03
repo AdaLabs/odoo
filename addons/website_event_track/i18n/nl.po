@@ -5,7 +5,7 @@
 # Translators:
 # Wil Odoo, 2024
 # Martin Trigaux, 2024
-# Erwin van der Ploeg <erwin@odooexperts.nl>, 2024
+# Erwin van der Ploeg <erwin@odooexperts.nl>, 2025
 # Manon Rondou, 2025
 # 
 msgid ""
@@ -1258,7 +1258,7 @@ msgstr "Is track vandaag"
 #. module: website_event_track
 #: model:ir.model.fields,field_description:website_event_track.field_event_track__is_track_upcoming
 msgid "Is Track Upcoming"
-msgstr "Is Track aanstaande"
+msgstr "Is track aankomend"
 
 #. module: website_event_track
 #: model:ir.model.fields,field_description:website_event_track.field_event_track_visitor__is_wishlisted
@@ -2480,7 +2480,7 @@ msgstr "Website communicatie geschiedenis"
 #. module: website_event_track
 #: model:ir.model.fields,field_description:website_event_track.field_event_track__website_meta_description
 msgid "Website meta description"
-msgstr "Website meta omschrijving"
+msgstr "Meta-omschrijving website"
 
 #. module: website_event_track
 #: model:ir.model.fields,field_description:website_event_track.field_event_track__website_meta_keywords

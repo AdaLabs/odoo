@@ -1802,7 +1802,7 @@ function _normalizeStyle(style) {
  */
 function correctBorderAttributes(style) {
     const stylesObject = style
-        .replace(/\s+/g, "")
+        .replace(/\s+/g, " ")
         .split(";")
         .reduce((styles, styleString) => {
             const [attribute, value] = styleString.split(":").map((str) => str.trim());
@@ -1834,12 +1834,17 @@ function correctBorderAttributes(style) {
     }, 0);
 
     if (totalBorderWidth === 0) {
-        stylesObject["border-style"] = "none";
+        let correctedStyle = style.trim();
+        if (correctedStyle.slice(-1) != ';') {
+            correctedStyle += ';';
+        }
+        correctedStyle = correctedStyle.replace(
+            /(;|^)\s*border-style\s*:[^;]*(;|$)|$/, '$1border-style:none$2'
+        );
+        return correctedStyle;
     }
 
-    return Object.entries(stylesObject)
-        .map(([attribute, value]) => `${attribute}:${value}`)
-        .join(";");
+    return style;
 }
 
 export default {

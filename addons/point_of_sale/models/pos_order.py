@@ -26,6 +26,7 @@ class PosOrder(models.Model):
     _inherit = ["portal.mixin", "pos.bus.mixin", "pos.load.mixin", "mail.thread"]
     _description = "Point of Sale Orders"
     _order = "date_order desc, name desc, id desc"
+    _mailing_enabled = True
 
     # This function deals with orders that belong to a closed session. It attempts to find
     # any open session that can be used to capture the order. If no open session is found,
@@ -93,7 +94,7 @@ class PosOrder(models.Model):
             })
             pos_order = pos_order.with_company(pos_order.company_id)
         else:
-            pos_order = self.env['pos.order'].browse(order.get('id'))
+            pos_order = existing_order
 
             # Save lines and payments before to avoid exception if a line is deleted
             # when vals change the state to 'paid'
@@ -102,6 +103,8 @@ class PosOrder(models.Model):
                     pos_order.write({field: order.get(field)})
                     order[field] = []
 
+            del order['uuid']
+            del order['access_token']
             pos_order.write(order)
 
         pos_order._link_combo_items(combo_child_uuids_by_parent_uuid)
@@ -219,6 +222,14 @@ class PosOrder(models.Model):
         for line_values in line_values_list:
             line = line_values['record']
             invoice_lines_values = self._get_invoice_lines_values(line_values, line)
+            if line.product_id.type == 'combo':
+                quantity = int(invoice_lines_values['quantity']) if invoice_lines_values['quantity'] == int(invoice_lines_values['quantity']) else invoice_lines_values['quantity']
+                invoice_lines.append(Command.create({
+                    'display_type': 'line_section',
+                    'name': f'{line.product_id.name} x {quantity}',
+                }))
+                continue
+
             invoice_lines.append((0, None, invoice_lines_values))
             is_percentage = self.pricelist_id and any(
                 self.pricelist_id.item_ids.filtered(
@@ -255,11 +266,11 @@ class PosOrder(models.Model):
         help="Employee who uses the cash register.",
         default=lambda self: self.env.uid,
     )
-    amount_difference = fields.Float(string='Difference', digits=0, readonly=True)
-    amount_tax = fields.Float(string='Taxes', digits=0, readonly=True, required=True)
-    amount_total = fields.Float(string='Total', digits=0, readonly=True, required=True)
-    amount_paid = fields.Float(string='Paid', digits=0, required=True)
-    amount_return = fields.Float(string='Returned', digits=0, required=True, readonly=True)
+    amount_difference = fields.Monetary(string='Difference', readonly=True)
+    amount_tax = fields.Monetary(string='Taxes', readonly=True, required=True)
+    amount_total = fields.Monetary(string='Total', readonly=True, required=True)
+    amount_paid = fields.Monetary(string='Paid', required=True)
+    amount_return = fields.Monetary(string='Returned', required=True, readonly=True)
     margin = fields.Monetary(string="Margin", compute='_compute_margin')
     margin_percent = fields.Float(string="Margin (%)", compute='_compute_margin', digits=(12, 4))
     is_total_cost_computed = fields.Boolean(compute='_compute_is_total_cost_computed',
@@ -305,7 +316,7 @@ class PosOrder(models.Model):
     shipping_date = fields.Date('Shipping Date')
     is_invoiced = fields.Boolean('Is Invoiced', compute='_compute_is_invoiced')
     is_tipped = fields.Boolean('Is this already tipped?', readonly=True)
-    tip_amount = fields.Float(string='Tip Amount', digits=0, readonly=True)
+    tip_amount = fields.Monetary(string='Tip Amount', readonly=True)
     refund_orders_count = fields.Integer('Number of Refund Orders', compute='_compute_refund_related_fields', help="Number of orders where items from this order were refunded")
     refunded_order_id = fields.Many2one('pos.order', compute='_compute_refund_related_fields', help="Order from which items were refunded in this order")
     has_refundable_lines = fields.Boolean('Has Refundable Lines', compute='_compute_has_refundable_lines')
@@ -735,7 +746,7 @@ class PosOrder(models.Model):
             'invoice_date': invoice_date.astimezone(timezone).date(),
             'fiscal_position_id': self.fiscal_position_id.id,
             'invoice_line_ids': self._prepare_invoice_lines(),
-            'invoice_payment_term_id': self.partner_id.property_payment_term_id.id or False,
+            'invoice_payment_term_id': False,
             'invoice_cash_rounding_id': self.config_id.rounding_method.id,
         }
         if self.refunded_order_id.account_move:
@@ -927,6 +938,9 @@ class PosOrder(models.Model):
             self._create_order_picking()
         return self._generate_pos_order_invoice()
 
+    def _get_invoice_post_context(self):
+        return {"skip_invoice_sync": True}
+
     def _generate_pos_order_invoice(self):
         moves = self.env['account.move']
 
@@ -943,7 +957,7 @@ class PosOrder(models.Model):
             new_move = order._create_invoice(move_vals)
 
             order.state = 'invoiced'
-            new_move.sudo().with_company(order.company_id).with_context(skip_invoice_sync=True)._post()
+            new_move.sudo().with_company(order.company_id).with_context(**order._get_invoice_post_context())._post()
 
             moves += new_move
             payment_moves = order._apply_invoice_payments(order.session_id.state == 'closed')
@@ -1287,9 +1301,9 @@ class PosOrderLine(models.Model):
         store=True, readonly=False)
     price_unit = fields.Float(string='Unit Price', digits=0)
     qty = fields.Float('Quantity', digits='Product Unit of Measure', default=1)
-    price_subtotal = fields.Float(string='Tax Excl.', digits=0,
+    price_subtotal = fields.Monetary(string='Tax Excl.',
         readonly=True, required=True)
-    price_subtotal_incl = fields.Float(string='Tax Incl.', digits=0,
+    price_subtotal_incl = fields.Monetary(string='Tax Incl.',
         readonly=True, required=True)
     price_extra = fields.Float(string="Price extra")
     price_type = fields.Selection([
@@ -1640,7 +1654,7 @@ class PosOrderLine(models.Model):
         for line in self:
             if line.order_id.config_id.order_edit_tracking:
                 line.order_id.has_deleted_line = True
-                body = _("%s: Deleted line", line.full_product_name)
+                body = _("%(product_name)s: Deleted line (quantity: %(qty)s)", product_name=line.full_product_name, qty=line.qty)
                 line.order_id._post_chatter_message(body)
         res = super().unlink()
         return res

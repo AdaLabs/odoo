@@ -1276,6 +1276,7 @@ class IrModelFields(models.Model):
             'required': bool(field_data['required']),
             'readonly': bool(field_data['readonly']),
             'store': bool(field_data['store']),
+            'company_dependent': bool(field_data['company_dependent']),
         }
         if field_data['ttype'] in ('char', 'text', 'html'):
             attrs['translate'] = bool(field_data['translate'])
@@ -2228,7 +2229,7 @@ class IrModelData(models.Model):
     @tools.ormcache('xmlid')
     def _xmlid_lookup(self, xmlid: str) -> tuple:
         """Low level xmlid lookup
-        Return (id, res_model, res_id) or raise ValueError if not found
+        Return (res_model, res_id) or raise ValueError if not found
         """
         module, name = xmlid.split('.', 1)
         query = "SELECT model, res_id FROM ir_model_data WHERE module=%s AND name=%s"
@@ -2479,6 +2480,8 @@ class IrModelData(models.Model):
                 ('model', '=', records._name),
                 ('res_id', 'in', records.ids),
             ])
+            cloc_exclude_data = ref_data.filtered(lambda imd: imd.module == '__cloc_exclude__')
+            ref_data -= cloc_exclude_data
             records -= records.browse((ref_data - module_data).mapped('res_id'))
             if not records:
                 return
@@ -2507,6 +2510,7 @@ class IrModelData(models.Model):
             _logger.info('Deleting %s', records)
             try:
                 with self._cr.savepoint():
+                    cloc_exclude_data.unlink()
                     records.unlink()
             except Exception:
                 if len(records) <= 1:

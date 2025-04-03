@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:04+0000\n"
+"POT-Creation-Date: 2025-03-19 20:37+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
 "Last-Translator: Abe Manyo, 2025\n"
 "Language-Team: Indonesian (https://app.transifex.com/odoo/teams/41243/id/)\n"
@@ -1652,7 +1652,7 @@ msgstr "Cannot do a special paste of a figure."
 #. odoo-javascript
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "Cannot duplicate a pivot in error."
-msgstr ""
+msgstr "Tidak dapat menduplikasikan pivot di error."
 
 #. module: spreadsheet
 #. odoo-javascript
@@ -2172,7 +2172,7 @@ msgstr "Mengonversikan string yang ditentukan menjadi huruf besar."
 #. odoo-javascript
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "Converts a string to a numeric value."
-msgstr ""
+msgstr "Konversikan string menjadi value numerik."
 
 #. module: spreadsheet
 #. odoo-javascript
@@ -5698,7 +5698,7 @@ msgstr "Pivot diduplikasikan."
 #. odoo-javascript
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "Pivot duplication failed."
-msgstr ""
+msgstr "Duplikat pivot gagal."
 
 #. module: spreadsheet
 #. odoo-javascript
@@ -7393,6 +7393,24 @@ msgstr "Base (%s) harus di antara 2 dan 36 inklusif."
 #. module: spreadsheet
 #. odoo-javascript
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
+msgid "The base (%s) must be strictly positive."
+msgstr "Base (%s) harus selalu positif."
+
+#. module: spreadsheet
+#. odoo-javascript
+#: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
+msgid "The base must be different from 1."
+msgstr "Base harus berbeda dari 1."
+
+#. module: spreadsheet
+#. odoo-javascript
+#: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
+msgid "The base of the logarithm."
+msgstr "Base dari logaritma."
+
+#. module: spreadsheet
+#. odoo-javascript
+#: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "The base to convert the value from."
 msgstr "Konversi nilai dari baseline ini."
 
@@ -8427,6 +8445,12 @@ msgstr "Hidup (%s) harus selalu positif."
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "The logarithm of a number, base e (euler's number)."
 msgstr "Logaritma bilangan, basis e (bilangan euler)."
+
+#. module: spreadsheet
+#. odoo-javascript
+#: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
+msgid "The logarithm of a number, for a given base."
+msgstr "Logaritma angka, untuk base yang diberikan."
 
 #. module: spreadsheet
 #. odoo-javascript
@@ -10132,6 +10156,12 @@ msgstr "Value yang digunakan untuk menghitung invers tangen."
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "The value for which to calculate the logarithm, base e."
 msgstr "Value yang digunakan untuk menghitung logaritma, basis e."
+
+#. module: spreadsheet
+#. odoo-javascript
+#: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
+msgid "The value for which to calculate the logarithm."
+msgstr "Value yang digunakan untuk menghitung logaritma."
 
 #. module: spreadsheet
 #. odoo-javascript
@@ -12052,7 +12082,7 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/spreadsheet/static/src/o_spreadsheet/o_spreadsheet.js:0
 msgid "the string to be converted"
-msgstr ""
+msgstr "string harus dikonversi"
 
 #. module: spreadsheet
 #. odoo-javascript

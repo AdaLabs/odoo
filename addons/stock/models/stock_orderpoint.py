@@ -304,7 +304,7 @@ class StockWarehouseOrderpoint(models.Model):
         return self.action_replenish()
 
     @api.depends('product_id', 'location_id', 'product_id.stock_move_ids', 'product_id.stock_move_ids.state',
-                 'product_id.stock_move_ids.date', 'product_id.stock_move_ids.product_uom_qty')
+                 'product_id.stock_move_ids.date', 'product_id.stock_move_ids.product_uom_qty', 'product_id.seller_ids.delay')
     def _compute_qty(self):
         orderpoints_contexts = defaultdict(lambda: self.env['stock.warehouse.orderpoint'])
         for orderpoint in self:
@@ -346,11 +346,11 @@ class StockWarehouseOrderpoint(models.Model):
 
     @api.depends('qty_multiple', 'qty_forecast', 'product_min_qty', 'product_max_qty', 'visibility_days')
     def _compute_qty_to_order_computed(self):
-        orderpoints_to_compute = self.filtered(lambda orderpoint: orderpoint.product_id and orderpoint.location_id)
-        qty_in_progress_by_orderpoint = orderpoints_to_compute._quantity_in_progress()
         for orderpoint in self:
-            orderpoint.qty_to_order_computed = orderpoint._get_qty_to_order(qty_in_progress_by_orderpoint=qty_in_progress_by_orderpoint)
-        (self - orderpoints_to_compute).qty_to_order_computed = False
+            if not orderpoint.product_id or not orderpoint.location_id:
+                orderpoint.qty_to_order_computed = False
+                continue
+            orderpoint.qty_to_order_computed = orderpoint._get_qty_to_order(qty_in_progress_by_orderpoint=orderpoint._quantity_in_progress())
 
     def _get_qty_to_order(self, force_visibility_days=False, qty_in_progress_by_orderpoint={}):
         self.ensure_one()
@@ -501,7 +501,7 @@ class StockWarehouseOrderpoint(models.Model):
         rounding = self.env['decimal.precision'].precision_get('Product Unit of Measure')
         # Group orderpoint by product-location
         orderpoint_by_product_location = self.env['stock.warehouse.orderpoint']._read_group(
-            [('id', 'in', orderpoints.ids)],
+            [('id', 'in', orderpoints.ids), ('product_id', 'in', product_ids)],
             ['product_id', 'location_id'],
             ['id:recordset'])
         orderpoint_by_product_location = {
@@ -520,7 +520,7 @@ class StockWarehouseOrderpoint(models.Model):
 
         # With archived ones to avoid `product_location_check` SQL constraints
         orderpoint_by_product_location = self.env['stock.warehouse.orderpoint'].with_context(active_test=False)._read_group(
-            [('id', 'in', orderpoints.ids)],
+            [('id', 'in', orderpoints.ids), ('product_id', 'in', product_ids)],
             ['product_id', 'location_id'],
             ['id:recordset'])
         orderpoint_by_product_location = {
@@ -597,11 +597,11 @@ class StockWarehouseOrderpoint(models.Model):
         domain = [
             ('create_uid', '=', SUPERUSER_ID),
             ('trigger', '=', 'manual'),
-            ('qty_to_order', '<=', 0)
         ]
         if self.ids:
             expression.AND([domain, [('ids', 'in', self.ids)]])
-        orderpoints_to_remove = self.env['stock.warehouse.orderpoint'].with_context(active_test=False).search(domain)
+        manual_orderpoints = self.env['stock.warehouse.orderpoint'].with_context(active_test=False).search(domain)
+        orderpoints_to_remove = manual_orderpoints.filtered(lambda o: o.qty_to_order <= 0.0)
         # Remove previous automatically created orderpoint that has been refilled.
         orderpoints_to_remove.unlink()
         return orderpoints_to_remove
@@ -649,7 +649,7 @@ class StockWarehouseOrderpoint(models.Model):
                             origin = orderpoint.name
                         if float_compare(orderpoint.qty_to_order, 0.0, precision_rounding=orderpoint.product_uom.rounding) == 1:
                             date = orderpoint._get_orderpoint_procurement_date()
-                            global_visibility_days = self.env.context.get('global_visibility_days', 0)
+                            global_visibility_days = self.env.context.get('global_visibility_days', self.env['ir.config_parameter'].sudo().get_param('stock.visibility_days', 0))
                             if global_visibility_days:
                                 date -= relativedelta.relativedelta(days=int(global_visibility_days))
                             values = orderpoint._prepare_procurement_values(date=date)
@@ -716,3 +716,7 @@ class StockWarehouseOrderpoint(models.Model):
 
     def _get_orderpoint_locations(self):
         return self.env['stock.location'].search([('replenish_location', '=', True)])
+
+    @api.model
+    def get_visibility_days(self):
+        return self.env['ir.config_parameter'].sudo().get_param('stock.visibility_days', 0)

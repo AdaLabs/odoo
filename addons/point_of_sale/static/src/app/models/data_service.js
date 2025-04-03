@@ -33,7 +33,6 @@ export class PosData extends Reactive {
         this.records = {};
         this.opts = new DataServiceOptions();
         this.channels = [];
-        this.onNotified = getOnNotified(this.bus, odoo.access_token);
 
         this.network = {
             warningTriggered: false,
@@ -42,6 +41,7 @@ export class PosData extends Reactive {
             unsyncData: [],
         };
 
+        this.intializeWebsocket();
         this.initIndexedDB();
         await this.initData();
 
@@ -68,8 +68,12 @@ export class PosData extends Reactive {
         this.bus.addEventListener("connect", this.reconnectWebSocket.bind(this));
     }
 
-    reconnectWebSocket() {
+    intializeWebsocket() {
         this.onNotified = getOnNotified(this.bus, odoo.access_token);
+    }
+
+    reconnectWebSocket() {
+        this.intializeWebsocket();
 
         const channels = [...this.channels];
         this.channels = [];
@@ -287,20 +291,6 @@ export class PosData extends Reactive {
         this.models.loadData(data, this.modelToLoad);
         this.models.loadData({ "pos.order": order, "pos.order.line": orderlines });
         const dbData = await this.loadIndexedDBData();
-        if (dbData && dbData["pos.order"]?.length) {
-            const ids = dbData["pos.order"].map((o) => o.id).filter((id) => typeof id === "number");
-
-            if (ids.length) {
-                const result = await this.read("pos.order", ids);
-                const serverIds = result.map((r) => r.id);
-
-                for (const id of ids) {
-                    if (!serverIds.includes(id)) {
-                        this.localDeleteCascade(this.models["pos.order"].get(id));
-                    }
-                }
-            }
-        }
         this.loadedIndexedDBProducts = dbData ? dbData["product.product"] : [];
         this.network.loading = false;
     }
@@ -484,6 +474,10 @@ export class PosData extends Reactive {
 
             for (const [, rel] of relations) {
                 if (this.opts.pohibitedAutoLoadedModels.includes(rel.relation)) {
+                    continue;
+                }
+
+                if (this.opts.prohibitedAutoLoadedFields[rel.model]?.includes(rel.name)) {
                     continue;
                 }
 

@@ -53,10 +53,12 @@ class PeppolRegistration(models.TransientModel):
         string="Peppol warnings",
         compute="_compute_peppol_warnings",
     )
-    smp_registration = fields.Boolean(
+    smp_registration = fields.Boolean(  # TODO switch to computed non-stored in master
         string='Register as a receiver',
         help="If not check, you will only be able to send invoices but not receive them.",
-        default=True,
+        compute='_compute_smp_registration',
+        store=True,
+        readonly=False,
     )
 
     # -------------------------------------------------------------------------
@@ -93,7 +95,7 @@ class PeppolRegistration(models.TransientModel):
         for wizard in self:
             wizard.edi_user_id = wizard.company_id.account_edi_proxy_client_ids.filtered(lambda u: u.proxy_type == 'peppol')[:1]
 
-    @api.depends('peppol_eas', 'peppol_endpoint')
+    @api.depends('peppol_eas', 'peppol_endpoint', 'smp_registration')
     def _compute_peppol_warnings(self):
         for wizard in self:
             peppol_warnings = {}
@@ -106,11 +108,24 @@ class PeppolRegistration(models.TransientModel):
                     'message': _("The endpoint number might not be correct. "
                                 "Please check if you entered the right identification number."),
                 }
-            if wizard.company_id.country_code == 'BE' and wizard.peppol_eas not in (False, '0208'):
-                peppol_warnings['company_peppol_eas_warning'] = {
-                    'message': _("The recommended identification method for Belgium is your Company Registry Number."),
+            if not wizard.smp_registration:
+                peppol_warnings['company_on_another_smp'] = {
+                    'message': _("Your company is already registered on another Access Point for receiving invoices."
+                                 "We will register you as a sender only.")
                 }
             wizard.peppol_warnings = peppol_warnings or False
+
+    @api.depends('peppol_eas', 'peppol_endpoint')
+    def _compute_smp_registration(self):
+        for wizard in self:
+            wizard.smp_registration = False
+            if wizard.peppol_eas and wizard.peppol_endpoint:
+                try:
+                    edi_identification = f'{wizard.peppol_eas}:{wizard.peppol_endpoint}'
+                    wizard.edi_user_id._check_company_on_peppol(wizard.company_id, edi_identification)
+                    wizard.smp_registration = True
+                except UserError:
+                    pass
 
     @api.depends('edi_user_id')
     def _compute_edi_mode_constraint(self):
@@ -274,21 +289,18 @@ class PeppolRegistration(models.TransientModel):
         # success
         notifications = {
             'sender': {
-                'title': _('Registered as a sender.'),
                 'message': _('You can now send electronic invoices via Peppol.'),
             },
             'smp_registration': {  # TODO remove in master
-                'title': _('Registered to receive documents via Peppol.'),
-                'message': _('Your registration on Peppol network should be activated within a day. The updated status will be visible in Settings.'),
+                'message': _('Your Peppol registration will be activated soon. You can already send invoices.'),
             },
             'receiver': {
-                'title': _('Registered as a receiver.'),
                 'message': _('You can now send and receive electronic invoices via Peppol'),
             },
         }
         state = self.company_id.account_peppol_proxy_state
         return self._action_send_notification(
-            title=notifications[state]['title'],
+            title=None,
             message=notifications[state]['message'],
         )
 

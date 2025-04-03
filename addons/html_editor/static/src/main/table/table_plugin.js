@@ -99,6 +99,9 @@ export class TablePlugin extends Plugin {
     setup() {
         this.addDomListener(this.editable, "mousedown", this.onMousedown);
         this.addDomListener(this.editable, "mouseup", this.onMouseup);
+        this.addDomListener(this.editable, "keydown", (ev) => {
+            this._isKeyDown = true;
+        });
         this.onMousemove = this.onMousemove.bind(this);
     }
 
@@ -173,7 +176,9 @@ export class TablePlugin extends Plugin {
         const columnIndex = getColumnIndex(reference);
         const table = closestElement(reference, "table");
         const tableWidth = table.style.width && parseFloat(table.style.width);
-        const referenceColumn = table.querySelectorAll(`tr td:nth-of-type(${columnIndex + 1})`);
+        const referenceColumn = table.querySelectorAll(
+            `tr td:nth-of-type(${columnIndex + 1}), tr th:nth-of-type(${columnIndex + 1})`
+        );
         const referenceCellWidth = reference.style.width
             ? parseFloat(reference.style.width)
             : reference.clientWidth;
@@ -198,7 +203,7 @@ export class TablePlugin extends Plugin {
             }
         }
         referenceColumn.forEach((cell, rowIndex) => {
-            const newCell = this.document.createElement("td");
+            const newCell = this.document.createElement(cell.tagName);
             const baseContainer = this.dependencies.baseContainer.createBaseContainer();
             baseContainer.append(this.document.createElement("br"));
             newCell.append(baseContainer);
@@ -230,11 +235,11 @@ export class TablePlugin extends Plugin {
         if (referenceRowHeight) {
             newRow.style.height = referenceRowHeight + "px";
         }
-        const cells = reference.querySelectorAll("td");
+        const cells = reference.querySelectorAll("td, th");
         const referenceRowWidths = [...cells].map((cell) => cell.style.width);
         newRow.append(
-            ...Array.from(Array(cells.length)).map(() => {
-                const td = this.document.createElement("td");
+            ...Array.from(cells).map((cell) => {
+                const td = this.document.createElement(cell.tagName);
                 const baseContainer = this.dependencies.baseContainer.createBaseContainer();
                 baseContainer.append(this.document.createElement("br"));
                 td.append(baseContainer);
@@ -542,10 +547,15 @@ export class TablePlugin extends Plugin {
             // It will be retriggered with selectionchange
             return;
         }
-        this.deselectTable();
         const selection = selectionData.editableSelection;
         const startTd = closestElement(selection.startContainer, "td");
         const endTd = closestElement(selection.endContainer, "td");
+        if (!(startTd && startTd === endTd) || this._isKeyDown) {
+            delete this._isKeyDown;
+            // Prevent deselecting single cell unless selection changes
+            // through keyboard.
+            this.deselectTable();
+        }
         const startTable = ancestors(selection.startContainer, this.editable)
             .filter((node) => node.nodeName === "TABLE")
             .pop();
@@ -728,6 +738,11 @@ export class TablePlugin extends Plugin {
             }
             for (const td of selectedTds) {
                 this.dependencies.color.colorElement(td, color, mode);
+                if (color) {
+                    td.style["color"] = getComputedStyle(td).color;
+                } else {
+                    td.style["color"] = "";
+                }
             }
         }
     }

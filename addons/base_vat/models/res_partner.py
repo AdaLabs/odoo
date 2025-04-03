@@ -48,6 +48,7 @@ _ref_vat = {
     'gr': 'EL123456783',
     'hu': _lt('HU12345676 or 12345678-1-11 or 8071592153'),
     'hr': 'HR01234567896',  # Croatia, contributed by Milan Tribuson
+    'id': '1234567890123456',
     'ie': 'IE1234567FA',
     'il': _lt('XXXXXXXXX [9 digits] and it should respect the Luhn algorithm checksum'),
     'in': "12AAAAA1234AAZA",
@@ -79,7 +80,8 @@ _ref_vat = {
     'uy': _lt("Example: '219999830019' (format: 12 digits, all numbers, valid check digit)"),
     've': 'V-12345678-1, V123456781, V-12.345.678-1',
     'xi': 'XI123456782',
-    'sa': _lt('310175397400003 [Fifteen digits, first and last digits should be "3"]')
+    'sa': _lt('310175397400003 [Fifteen digits, first and last digits should be "3"]'),
+    'jp': 'T7000012050002',
 }
 
 _region_specific_vat_codes = {

@@ -542,7 +542,7 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
             'extra_edis': False,
             'extra_edi_checkboxes': False,
             'pdf_report_id': wizard._get_default_pdf_report_id(invoice).id,
-            'display_pdf_report_id': True,
+            'display_pdf_report_id': False,
             'mail_template_id': wizard._get_default_mail_template_id(invoice).id,
             'mail_lang': 'en_US',
             'mail_partner_ids': wizard.move_id.partner_id.ids,
@@ -574,7 +574,9 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
 
         # Send it again. The PDF must not be created again.
         wizard = self.create_send_and_print(invoice, sending_methods=['email', 'manual'])
-        results = wizard.action_send_and_print()
+        with patch('odoo.addons.account.models.account_move_send.AccountMoveSend._hook_invoice_document_after_pdf_report_render') as mocked_method:
+            results = wizard.action_send_and_print()
+            mocked_method.assert_not_called()
         self.assertEqual(results['type'], 'ir.actions.act_url')
         self.assertFalse(invoice.sending_data)
         self.assertRecordValues(invoice, [{'invoice_pdf_report_id': pdf_report.id}])
@@ -645,7 +647,6 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
         invoice3 = self.init_invoice("out_invoice", partner=self.partner_b, amounts=[1000], post=True)
         wizard = self.create_send_and_print(invoice1 + invoice2 + invoice3)
         self.assertEqual(wizard.move_ids, invoice1 + invoice2 + invoice3)
-        self.assertTrue(wizard.alerts and 'account_pdf_exist' in wizard.alerts)
         self.assertEqual(wizard.summary_data, {
             'manual': {'count': 2, 'label': 'Manually'},
             'email': {'count': 1, 'label': 'by Email'},
@@ -1079,3 +1080,24 @@ class TestAccountMoveSend(TestAccountMoveSendCommon):
         wizard.action_send_and_print()
         self.assertTrue(invoice.is_move_sent)
         self.assertTrue(invoice.invoice_pdf_report_id)
+
+    def test_get_sending_settings(self):
+        invoice = self.init_invoice("out_invoice", amounts=[1000], post=True)
+        wizard = self.create_send_and_print(invoice)
+        
+        expected_results = {
+            'sending_methods': ['email'],
+            'invoice_edi_format': False,
+            'extra_edis': [],
+            'pdf_report': self.env.ref('account.account_invoices'),
+            'author_user_id': self.env.user.id,
+            'author_partner_id': self.env.user.partner_id.id,
+            'mail_template': self.env.ref('account.email_template_edi_invoice'),
+            'mail_lang': 'en_US',
+            'mail_body': wizard.mail_body,
+            'mail_subject': 'company_1_data Invoice (Ref INV/2019/00001)',
+            'mail_partner_ids': invoice.partner_id.ids,
+            'mail_attachments_widget': [{'id': 'placeholder_INV_2019_00001.pdf', 'name': 'INV_2019_00001.pdf', 'mimetype': 'application/pdf', 'placeholder': True}],
+        }
+        results = wizard._get_sending_settings()
+        self.assertDictEqual(results, expected_results)

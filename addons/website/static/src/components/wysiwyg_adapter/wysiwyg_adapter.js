@@ -528,15 +528,34 @@ export class WysiwygAdapterComponent extends Wysiwyg {
             // generated a new stack and break the "redo" of the editor.
             this.odooEditor.automaticStepSkipStack();
             for (const record of records) {
-                if (record.attributeName === 'contenteditable') {
-                    continue;
-                }
-
+                // If the mutation occurred in a non-savable zone, skip it
                 const $savable = $(record.target).closest(this.savableSelector);
                 if (!$savable.length) {
                     continue;
                 }
 
+                if (record.attributeName === 'contenteditable') {
+                    continue;
+                }
+                // Whitespace changes in the "class" attribute should be ignored
+                // FIXME ? I suspect that the "attributeCache" system in
+                // `filterMutationRecords` is buggy in the first place: even
+                // though "o_we_force_no_transition" was not listed in
+                // "renderingClasses", it was acting like one because the
+                // "attributeCache" system ignored it... unless the classes
+                // contained an extra whitespace. The combination of this +
+                // adding it as a rendering class makes it so the "o_dirty"
+                // class is not added by merely clicking on a section which has
+                // useless whitespaces in its class attribute.
+                if (record.attributeName === 'class') {
+                    const oldValue = record.oldValue?.trim() || "";
+                    const oldClasses = oldValue ? oldValue.split(/\s+/) : [];
+                    const newClasses = [...record.target.classList];
+                    if (oldClasses.length === newClasses.length
+                            && oldClasses.every(c => newClasses.includes(c))) {
+                        continue;
+                    }
+                }
                 // Do not mark the editable dirty when simply adding/removing
                 // link zwnbsp since these are just technical nodes that aren't
                 // part of the user's editing of the document.
@@ -1184,25 +1203,24 @@ export class WysiwygAdapterComponent extends Wysiwyg {
         const isDirty = this._isDirty();
         let callback = () => {
             this.leaveEditMode({ forceLeave: true });
-            const canPublish = this.websiteService.currentWebsite.metadata.canPublish;
-            if (
-                isDirty &&
-                (!canPublish ||
-                    (canPublish && this.websiteService.currentWebsite.metadata.isPublished)) &&
-                this.websiteService.currentWebsite.metadata.canOptimizeSeo
-            ) {
+            if (isDirty) {
                 const {
                     mainObject: { id, model },
+                    canPublish,
                 } = this.websiteService.currentWebsite.metadata;
                 rpc("/website/get_seo_data", {
                     res_id: id,
                     res_model: model,
                 }).then(
-                    (seo_data) =>
+                    (seo_data) => {
+                        if (!(seo_data.website_is_published && canPublish)) {
+                            return;
+                        }
                         checkAndNotifySEO(seo_data, OptimizeSEODialog, {
                             notification: this.notificationService,
                             dialog: this.dialogs,
-                        }),
+                        });
+                    },
                     (error) => {
                         throw error;
                     }

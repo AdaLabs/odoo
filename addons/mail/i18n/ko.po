@@ -4,17 +4,17 @@
 # 
 # Translators:
 # Martin Trigaux, 2024
-# Wil Odoo, 2024
-# Sarah Park, 2024
+# Sarah Park, 2025
 # Daye Jeong, 2025
+# Wil Odoo, 2025
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-27 13:02+0000\n"
+"POT-Creation-Date: 2025-03-19 20:36+0000\n"
 "PO-Revision-Date: 2024-09-25 09:41+0000\n"
-"Last-Translator: Daye Jeong, 2025\n"
+"Last-Translator: Wil Odoo, 2025\n"
 "Language-Team: Korean (https://app.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -141,6 +141,22 @@ msgstr "%(model_name)s.%(field_path)s  항목은 유효한 필드 경로가 아�
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
 msgid "%(name)s: %(message)s)"
 msgstr "%(name)s: %(message)s)"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid ""
+"%(new_line)s%(new_line)sType %(bold_start)s@username%(bold_end)s to mention "
+"someone, and grab their attention.%(new_line)sType "
+"%(bold_start)s#channel%(bold_end)s to mention a channel.%(new_line)sType "
+"%(bold_start)s/command%(bold_end)s to execute a command.%(new_line)sType "
+"%(bold_start)s:shortcut%(bold_end)s to insert a canned response in your "
+"message."
+msgstr ""
+"%(new_line)s%(new_line)s%(bold_start)s@username%(bold_end)s을 입력하여 누군가를 태그하고 "
+"관심을 끌 수 있습니다. %(new_line)s%(bold_start)s#channel%(bold_end)s을 입력하여 채널을 "
+"멘션합니다.%(new_line)s%(bold_start)s/command%(bold_end)s를 입력하여 명령을 실행할 수 있습니다. "
+"%(new_line)s미리 준비된 응답을 메시지에 삽입하려면 %(bold_start)s:바로가기%(bold_end)s를 입력합니다."
 
 #. module: mail
 #. odoo-javascript
@@ -593,6 +609,12 @@ msgstr "메시지 응답은 반드시 협력사나 게스트가 해야만 합니
 #: code:addons/mail/models/ir_actions_server.py:0
 msgid "A next activity can only be planned on models that use activities."
 msgstr "활동을 사용하는 모델에서만 다음 활동을 계획할 수 있습니다."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid "A scheduled message could not be sent"
+msgstr "예약된 메시지를 보낼 수 없습니다"
 
 #. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__google_translate_api_key
@@ -1535,6 +1557,11 @@ msgid ""
 msgstr "현재 활동을 완료로 표시하면, 이 활동이 자동으로 예약됩니다."
 
 #. module: mail
+#: model_terms:ir.ui.view,arch_db:mail.mail_activity_plan_view_form
+msgid "Available for all Companies"
+msgstr "모든 회사에서 사용 가능"
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/core/common/chat_window.xml:0
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
@@ -2165,12 +2192,6 @@ msgstr "다시 시도하려면 여기를 클릭하세요"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Click on your message"
-msgstr "메세지를 클릭하세요"
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/common/message_in_reply.xml:0
 msgid "Click to see the attachments"
 msgstr "첨부 파일을 확인하려면 여기를 클릭하세요"
@@ -2410,8 +2431,9 @@ msgstr "연결 테스트에 실패했습니다 : %s"
 #. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
-msgid "Connection to SFU server closed by the server"
-msgstr "서버에 의해 SFU 서버 연결이 종료됨"
+msgid ""
+"Connection to SFU server closed by the server, falling back to peer-to-peer"
+msgstr "SFU 서버 연결이 서버 측에서 해제되어 P2P 모드로 전환되었습니다"
 
 #. module: mail
 #. odoo-javascript
@@ -3789,12 +3811,6 @@ msgstr "확장"
 
 #. module: mail
 #. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Expand options"
-msgstr "옵션 확장"
-
-#. module: mail
-#. odoo-javascript
 #: code:addons/mail/static/src/core/public_web/discuss_sidebar.xml:0
 msgid "Expand panel"
 msgstr "패널 펼치기"
@@ -4471,6 +4487,12 @@ msgid "Hostname or IP of the mail server"
 msgstr "메일 서버의 호스트 이름 또는 IP"
 
 #. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
+msgid "Hover on your message and mark as todo"
+msgstr "메시지 위에 마우스를 가져가서 할 일로 표시하세요."
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_users_settings__voice_active_duration
 msgid ""
 "How long the audio broadcast will remain active after passing the volume "
@@ -4481,6 +4503,12 @@ msgstr "볼륨에서 임계값 통과 후 오디오 송출이 활성화된 상�
 #: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
 msgid "ICE Servers"
 msgstr "ICE 서버"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/discuss/call/common/call_context_menu.xml:0
+msgid "ICE connection:"
+msgstr "ICE 연결:"
 
 #. module: mail
 #. odoo-javascript
@@ -6122,12 +6150,6 @@ msgstr "메시지"
 #: model_terms:ir.ui.view,arch_db:mail.view_message_search
 msgid "Messages Search"
 msgstr "메시지 검색"
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/js/tours/discuss_channel_tour.js:0
-msgid "Messages can be <b>starred</b> to remind you to check back later."
-msgstr "메시지에 <b>별표를 표시</b>하여 나중에 다시 확인하도록 상기시켜 줄 수 있습니다."
 
 #. module: mail
 #: model:ir.model.constraint,message:mail.constraint_discuss_channel_from_message_id_unique
@@ -9564,6 +9586,14 @@ msgstr ""
 "나중에 다시 시도하시거나 %(company_name)s 주소로 대신 문의주시기 바랍니다."
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/mail_scheduled_message.py:0
+msgid ""
+"The message scheduled on %(model)s(%(id)s) with the following content could "
+"not be sent:%(original_message)s"
+msgstr "%(model)s(%(id)s)에 %(original_message)s 내용으로 예약된 메시지가 전송되지 못했습니다."
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_discuss_channel__from_message_id
 msgid "The message the channel was created from."
 msgstr "채널이 생성된 메시지입니다."
@@ -10593,6 +10623,12 @@ msgid "Username"
 msgstr "사용자 이름"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "Users in this channel: %(members)s."
+msgstr "이 채널의 사용자: %(members)s."
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_res_config_settings__restrict_template_rendering
 msgid ""
 "Users will still be able to render templates.\n"
@@ -10928,6 +10964,24 @@ msgid ""
 "continue?"
 msgstr ""
 "대화창에서 나가시면 더 이상 그룹 대화에 참여할 수 없으며, 참여를 원하실 경우 다시 초대를 받으셔야 합니다. 계속하시겠습니까?"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in a private conversation."
+msgstr "비공개 대화에 혼자 참여 중입니다."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are alone in this channel."
+msgstr "채널에 아무도 없습니다."
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "You are in a private conversation with %(member_names)s."
+msgstr "%(member_names)s님과 비공개 대화 중입니다."
 
 #. module: mail
 #. odoo-python
@@ -11585,6 +11639,12 @@ msgid "months"
 msgstr "월"
 
 #. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "more"
+msgstr "더보기"
+
+#. module: mail
 #. odoo-javascript
 #: code:addons/mail/static/src/chatter/web/mail_composer_schedule_dialog.xml:0
 msgid "morning"
@@ -11782,6 +11842,12 @@ msgstr "웹소켓 메시지 처리"
 #: model:ir.model.fields.selection,name:mail.selection__mail_activity_type__delay_unit__weeks
 msgid "weeks"
 msgstr "주"
+
+#. module: mail
+#. odoo-python
+#: code:addons/mail/models/discuss/discuss_channel.py:0
+msgid "you"
+msgstr "귀하"
 
 #. module: mail
 #. odoo-python

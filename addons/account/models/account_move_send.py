@@ -95,17 +95,12 @@ class AccountMoveSend(models.AbstractModel):
         if len(moves) > 1 and (partners_without_mail := moves.filtered(
                 lambda m: 'email' in moves_data[m]['sending_methods'] and not m.partner_id.email).partner_id
         ):
+            # should only appear in mass invoice sending
             alerts['account_missing_email'] = {
                 'level': 'warning',
                 'message': _("Partner(s) should have an email address."),
                 'action_text': _("View Partner(s)"),
                 'action': partners_without_mail._get_records_action(name=_("Check Partner(s) Email(s)")),
-            }
-        if moves.invoice_pdf_report_id:
-            alerts['account_pdf_exist'] = {
-                'level': 'info',
-                'message': _("Some invoice(s) already have a generated pdf. The existing pdf will be used for sending. "
-                             "If you want to regenerate them, please delete the attachment from the invoice."),
             }
         return alerts
 
@@ -386,10 +381,10 @@ class AccountMoveSend(models.AbstractModel):
         if not attachment_to_create:
             return
 
-        attachments = self.env['ir.attachment'].create(attachment_to_create)
+        attachments = self.sudo().env['ir.attachment'].create(attachment_to_create)
         res_id_to_attachment = {attachment.res_id: attachment for attachment in attachments}
 
-        for invoice, invoice_date in invoices_data.items():
+        for invoice, invoice_data in invoices_data.items():
             if attachment := res_id_to_attachment.get(invoice.id):
                 invoice.message_main_attachment_id = attachment
                 invoice.invalidate_recordset(fnames=['invoice_pdf_report_id', 'invoice_pdf_report_file'])
@@ -529,7 +524,11 @@ class AccountMoveSend(models.AbstractModel):
 
         self._generate_dynamic_reports(moves_data)
 
-        for move, move_data in [(move, move_data) for move, move_data in moves_data.items() if move.partner_id.email]:
+        for move, move_data in [
+            (move, move_data)
+            for move, move_data in moves_data.items()
+            if move.partner_id.email or move_data.get('mail_partner_ids')
+        ]:
             mail_template = move_data['mail_template']
             mail_lang = move_data['mail_lang']
             mail_params = self._get_mail_params(move, move_data)
@@ -617,7 +616,7 @@ class AccountMoveSend(models.AbstractModel):
             self._prepare_invoice_pdf_report(batch)
 
         for invoice, invoice_data in invoices_data_pdf.items():
-            if not invoice_data.get('error'):
+            if not invoice_data.get('error') and not invoice.invoice_pdf_report_id:
                 self._hook_invoice_document_after_pdf_report_render(invoice, invoice_data)
 
         # Cleanup the error if we don't want to block the regular pdf generation.
@@ -682,7 +681,7 @@ class AccountMoveSend(models.AbstractModel):
         """
         self._check_sending_data(moves, **custom_settings)
         moves_data = {
-            move: {
+            move.sudo(): {
                 **self._get_default_sending_settings(move, from_cron=from_cron, **custom_settings),
             }
             for move in moves

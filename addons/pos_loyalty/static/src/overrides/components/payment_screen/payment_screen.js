@@ -76,8 +76,9 @@ patch(PaymentScreen.prototype, {
      * @override
      */
     async _postPushOrderResolve(order, server_ids) {
-        for (const order_id of server_ids) {
-            await this._postProcessLoyalty(this.pos.models["pos.order"].get(order_id));
+        const orders = this.pos.models["pos.order"].readMany(server_ids).filter((o) => o.is_paid());
+        for (const order of orders) {
+            await this._postProcessLoyalty(order);
         }
         return super._postPushOrderResolve(order, server_ids);
     },
@@ -98,7 +99,7 @@ patch(PaymentScreen.prototype, {
                 agg[pe.coupon_id].partner_id = partner.id;
             }
             if (program.program_type != "loyalty") {
-                agg[pe.coupon_id].expiration_date = program.date_to;
+                agg[pe.coupon_id].expiration_date = program.date_to || pe.expiration_date;
             }
             return agg;
         }, {});
@@ -182,13 +183,14 @@ patch(PaymentScreen.prototype, {
                     }
                 }
             }
-            const loyaltyPoints = await this.currentOrder.getLoyaltyPoints().map((item) => ({
-                order_id: this.currentOrder.id,
-                card_id: item.couponId,
-                spent: item.points.spent,
-                won: item.points.won,
-                total: item.points.total,
+
+            const loyaltyPoints = Object.keys(couponData).map((coupon_id) => ({
+                order_id: order.id,
+                card_id: coupon_id,
+                spent: couponData[coupon_id].points < 0 ? -couponData[coupon_id].points : 0,
+                won: couponData[coupon_id].points > 0 ? couponData[coupon_id].points : 0,
             }));
+
             const couponUpdates = payload.coupon_updates.map((item) => ({
                 id: item.id,
                 old_id: item.old_id,
