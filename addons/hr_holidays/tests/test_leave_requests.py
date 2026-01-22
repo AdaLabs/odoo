@@ -1410,7 +1410,18 @@ class TestLeaveRequests(TestHrHolidaysCommon):
         self.assertEqual(modified_leave.request_date_to, two_days_after)
 
     def test_time_off_refusal(self):
+        #AdaLabs
+        #202218, [18.0] hr_holidays: on leave refusal, first_approver_id and second_approver_id are wrongly updated
         self.holidays_type_4.responsible_ids = False
+        allocation = self.env['hr.leave.allocation'].create({
+            'name': 'Allocation for employee_emp',
+            'employee_id': self.employee_emp_id,
+            'holiday_status_id': self.holidays_type_4.id,
+            'number_of_days': 5,
+            'state': 'confirm',
+            'date_from': '2024-01-01',
+        })
+        allocation.action_validate()
         test_holiday_1 = self.env['hr.leave'].create({
             'name': 'Test leave',
             'employee_id': self.employee_emp_id,
