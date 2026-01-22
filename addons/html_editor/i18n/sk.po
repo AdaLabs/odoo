@@ -1,27 +1,30 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* html_editor
-# 
+# * html_editor
+#
 # Translators:
 # Matus Krnac <matus.krnac@gmail.com>, 2024
 # Jan Prokop, 2024
 # Wil Odoo, 2025
 # Jaroslav Bosansky <jaro.bosansky@ekoenergo.sk>, 2025
 # Tomáš Píšek, 2025
-# 
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-19 20:37+0000\n"
-"PO-Revision-Date: 2024-09-29 00:00+0000\n"
-"Last-Translator: Tomáš Píšek, 2025\n"
-"Language-Team: Slovak (https://app.transifex.com/odoo/teams/41243/sk/)\n"
+"POT-Creation-Date: 2025-12-29 18:37+0000\n"
+"PO-Revision-Date: 2025-12-31 13:13+0000\n"
+"Last-Translator: Weblate <noreply-mt-weblate@weblate.org>\n"
+"Language-Team: Slovak <https://translate.odoo.com/projects/odoo-18/"
+"html_editor/sk/>\n"
+"Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: sk\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n "
+">= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Weblate 5.14.3\n"
 
 #. module: html_editor
 #. odoo-javascript
@@ -92,7 +95,7 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/html_editor/static/src/main/chatgpt/chatgpt_plugin.js:0
 msgid "AI"
-msgstr ""
+msgstr "AI"
 
 #. module: html_editor
 #. odoo-javascript
@@ -122,8 +125,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/html_editor/controllers/main.py:0
 msgid ""
-"Action %s not found, link preview is not available, please check your url is"
-" correct"
+"Action %s not found, link preview is not available, please check your url is "
+"correct"
 msgstr ""
 
 #. module: html_editor
@@ -280,24 +283,28 @@ msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Danger"
 msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Info"
 msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Success"
 msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Warning"
 msgstr ""
@@ -838,12 +845,6 @@ msgstr ""
 #. module: html_editor
 #. odoo-javascript
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
-msgid "Hide Dailymotion logo"
-msgstr "Skryť logo Dailymotion"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
 msgid "Hide fullscreen button"
 msgstr "Skryť tlačidlo plnej obrazovky"
 
@@ -852,12 +853,6 @@ msgstr "Skryť tlačidlo plnej obrazovky"
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
 msgid "Hide player controls"
 msgstr "Skryť hráčske ovládania"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
-msgid "Hide sharing button"
-msgstr "Skryť tlačidlo zdieľania"
 
 #. module: html_editor
 #. odoo-javascript
@@ -1076,6 +1071,12 @@ msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
+msgid "Instagram"
+msgstr "Instagram"
+
+#. module: html_editor
+#. odoo-javascript
 #: code:addons/html_editor/static/src/main/link/link_popover.xml:0
 msgid "Label"
 msgstr "Popisok"
@@ -1115,8 +1116,7 @@ msgstr "Odkaz bol skopírovaný do schránky"
 #. odoo-python
 #: code:addons/html_editor/controllers/main.py:0
 msgid ""
-"Link preview is not available because %s, please check if your url is "
-"correct"
+"Link preview is not available because %s, please check if your url is correct"
 msgstr ""
 
 #. module: html_editor
@@ -1944,12 +1944,6 @@ msgstr "Ak chcete vytvoriť prílohu, musíte zadať údaje alebo webovú adresu
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
-msgid "Youku"
-msgstr "Youku"
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/others/embedded_components/core/video/video.xml:0
 msgid "Your browser does not support iframe."
 msgstr ""
@@ -1980,12 +1974,6 @@ msgstr "Vzdialiť"
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "all"
-msgstr "všetko"
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/main/chatgpt/chatgpt_alternatives_dialog.xml:0
 msgid "alternatives..."
 msgstr ""
@@ -1995,12 +1983,6 @@ msgstr ""
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
 msgid "and"
 msgstr "a"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "database"
-msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
@@ -2022,12 +2004,6 @@ msgstr ""
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "media-library"
-msgstr ""
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/main/link/link_popover.xml:0
 msgid "or"
 msgstr "alebo"
@@ -2038,20 +2014,11 @@ msgstr "alebo"
 msgid "videos"
 msgstr "videá"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.urlDescription}}"
-msgstr ""
+#~ msgid "Hide Dailymotion logo"
+#~ msgstr "Skryť logo Dailymotion"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.urlTitle}}"
-msgstr ""
+#~ msgid "Hide sharing button"
+#~ msgstr "Skryť tlačidlo zdieľania"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.url}}"
-msgstr ""
+#~ msgid "Youku"
+#~ msgstr "Youku"

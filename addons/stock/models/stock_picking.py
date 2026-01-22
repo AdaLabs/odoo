@@ -14,6 +14,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from odoo.tools import format_datetime, format_date, format_list, groupby, SQL
 from odoo.tools.float_utils import float_compare, float_is_zero
+from odoo.tools.misc import clean_context
 
 
 class PickingType(models.Model):
@@ -846,6 +847,8 @@ class Picking(models.Model):
     @api.depends('move_ids.state', 'move_ids.date', 'move_type')
     def _compute_scheduled_date(self):
         for picking in self:
+            if not picking.id:
+                continue
             moves_dates = picking.move_ids.filtered(lambda move: move.state not in ('done', 'cancel')).mapped('date')
             if picking.move_type == 'direct':
                 picking.scheduled_date = min(moves_dates, default=picking.scheduled_date or fields.Datetime.now())
@@ -1208,6 +1211,7 @@ class Picking(models.Model):
             'views': [(view_id, 'list')],
             'domain': [('id', 'in', self.move_line_ids.ids)],
             'context': {
+                'sml_specific_default': True,
                 'default_picking_id': self.id,
                 'default_location_id': self.location_id.id,
                 'default_location_dest_id': self.location_dest_id.id,
@@ -1360,7 +1364,8 @@ class Picking(models.Model):
         no_quantities_done_ids = set()
         pickings_without_quantities = self.env['stock.picking']
         for picking in self:
-            if all(float_is_zero(move.quantity, precision_digits=precision_digits) for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))):
+            has_pick = any(move.picked and move.state not in ('done', 'cancel') for move in picking.move_ids)
+            if all(float_is_zero(move.quantity, precision_digits=precision_digits) for move in picking.move_ids.filtered(lambda m: m.state not in ('done', 'cancel') and (not has_pick or m.picked))):
                 pickings_without_quantities |= picking
 
         pickings_using_lots = self.filtered(lambda p: p.picking_type_id.use_create_lots or p.picking_type_id.use_existing_lots)
@@ -1396,6 +1401,7 @@ class Picking(models.Model):
         self.package_level_ids.filtered(lambda p: not p.move_ids).unlink()
 
     def button_validate(self):
+        self = self.filtered(lambda p: p.state != 'done')
         draft_picking = self.filtered(lambda p: p.state == 'draft')
         draft_picking.action_confirm()
         for move in draft_picking.move_ids:
@@ -1494,6 +1500,11 @@ class Picking(models.Model):
         """Whether the different transfers should be displayed on the pre action done wizards."""
         return len(self) > 1
 
+    def _should_ignore_backorders(self):
+        """ Checks if the `create_backorder` setting from the picking type should be ignored.
+        """
+        return bool(self.return_id)
+
     def _get_without_quantities_error_message(self):
         """ Returns the error message raised in validation if no quantities are reserved.
         The purpose of this method is to be overridden in case we want to adapt this message.
@@ -1502,7 +1513,7 @@ class Picking(models.Model):
         :rtype: str
         """
         return _(
-            'You cannot validate a transfer if no quantities are reserved. '
+            'You cannot validate a transfer if no quantities are reserved, or if only non-reserved moves are picked.'
             'To force the transfer, encode quantities.'
         )
 
@@ -1554,6 +1565,19 @@ class Picking(models.Model):
         to_confirm = self.move_ids.filtered(lambda m: m.state == 'draft' and m.quantity)
         to_confirm._action_confirm()
 
+    def _get_moves_to_backorder(self):
+        self.ensure_one()
+        return self.move_ids.filtered(lambda x: x.state not in ('done', 'cancel'))
+
+    def _create_backorder_picking(self):
+        self.ensure_one()
+        return self.copy({
+            'name': '/',
+            'move_ids': [],
+            'move_line_ids': [],
+            'backorder_id': self.id,
+        })
+
     def _create_backorder(self, backorder_moves=None):
         """ This method is called when the user chose to create a backorder. It will create a new
         picking, the backorder, and move the stock.moves that are not `done` or `cancel` into it.
@@ -1564,15 +1588,10 @@ class Picking(models.Model):
             if backorder_moves:
                 moves_to_backorder = backorder_moves.filtered(lambda m: m.picking_id == picking)
             else:
-                moves_to_backorder = picking.move_ids.filtered(lambda x: x.state not in ('done', 'cancel'))
+                moves_to_backorder = picking._get_moves_to_backorder()
             moves_to_backorder._recompute_state()
             if moves_to_backorder:
-                backorder_picking = picking.copy({
-                    'name': '/',
-                    'move_ids': [],
-                    'move_line_ids': [],
-                    'backorder_id': picking.id
-                })
+                backorder_picking = picking._create_backorder_picking()
                 moves_to_backorder.write({'picking_id': backorder_picking.id, 'picked': False})
                 moves_to_backorder.move_line_ids.package_level_id.write({'picking_id': backorder_picking.id})
                 moves_to_backorder.mapped('move_line_ids').write({'picking_id': backorder_picking.id})
@@ -1825,6 +1844,8 @@ class Picking(models.Model):
 
     def action_put_in_pack(self, move_lines_to_pack=False):
         self.ensure_one()
+        if self.env.context.get('sml_specific_default'):
+            self = self.with_context(clean_context(self.env.context))
         if self.state not in ('done', 'cancel'):
             move_line_ids = self._package_move_lines(move_lines_to_pack=move_lines_to_pack)
             if move_line_ids:

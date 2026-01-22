@@ -47,7 +47,7 @@ export class ComboPage extends Component {
         return !(
             this.selfOrder.editedLine &&
             this.selfOrder.editedLine.uuid &&
-            order.lastChangesSent[this.selfOrder.editedLine.uuid]
+            order.uiState.lineChanges[this.selfOrder.editedLine.uuid]
         );
     }
 
@@ -59,6 +59,25 @@ export class ComboPage extends Component {
         return this.selfOrder.models["product.template.attribute.value"].filter((c) =>
             attrValIds.includes(c.id)
         );
+    }
+
+    getGroupedSelectedValues(attrValIds) {
+        const selectedValues = this.getSelectedValues(attrValIds);
+        const groupedByAttribute = {};
+
+        for (const value of selectedValues) {
+            const attrId = value.attribute_id.id;
+
+            if (!groupedByAttribute[attrId]) {
+                groupedByAttribute[attrId] = {
+                    attribute_id: value.attribute_id,
+                    values: [],
+                };
+            }
+
+            groupedByAttribute[attrId].values.push(value);
+        }
+        return Object.values(groupedByAttribute);
     }
 
     isEveryValueSelected() {
@@ -96,7 +115,16 @@ export class ComboPage extends Component {
             combo_item_id: comboItem,
             configuration: {
                 attribute_custom_values: Object.values(this.env.customValues),
-                attribute_value_ids: Object.values(this.env.selectedValues).map((s) => parseInt(s)),
+                attribute_value_ids: Object.values(this.env.selectedValues).flatMap((value) => {
+                    if (typeof value === "string") {
+                        return [parseInt(value)];
+                    } else if (typeof value === "object") {
+                        return Object.keys(value)
+                            .filter((nestedKey) => value[nestedKey] === true)
+                            .map((nestedKey) => parseInt(nestedKey));
+                    }
+                    return [];
+                }),
                 price_extra: 0,
             },
         };

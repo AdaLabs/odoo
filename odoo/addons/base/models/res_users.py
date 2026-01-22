@@ -230,7 +230,7 @@ class Groups(models.Model):
         where_domains = []
         for group in operand:
             values = [v for v in group.split('/') if v]
-            group_name = values.pop().strip()
+            group_name = values.pop().strip() if values else ''
             category_name = values and '/'.join(values).strip() or group_name
             group_domain = [('name', operator, lst and [group_name] or group_name)]
             category_ids = self.env['ir.module.category'].sudo()._search(
@@ -345,7 +345,7 @@ class Users(models.Model):
             'image_1024', 'image_512', 'image_256', 'image_128', 'lang', 'tz',
             'tz_offset', 'groups_id', 'partner_id', 'write_date', 'action_id',
             'avatar_1920', 'avatar_1024', 'avatar_512', 'avatar_256', 'avatar_128',
-            'share', 'device_ids',
+            'share', 'device_ids', 'display_name',
         ]
 
     @property
@@ -802,6 +802,7 @@ class Users(models.Model):
     def _unlink_except_master_data(self):
         portal_user_template = self.env.ref('base.template_portal_user_id', False)
         default_user_template = self.env.ref('base.default_user', False)
+        public_user = self.env.ref('base.public_user', False)
         if SUPERUSER_ID in self.ids:
             raise UserError(_('You can not remove the admin user as it is used internally for resources created by Odoo (updates, module installation, ...)'))
         user_admin = self.env.ref('base.user_admin', raise_if_not_found=False)
@@ -810,6 +811,8 @@ class Users(models.Model):
         self.env.registry.clear_cache()
         if (portal_user_template and portal_user_template in self) or (default_user_template and default_user_template in self):
             raise UserError(_('Deleting the template users is not allowed. Deleting this profile will compromise critical functionalities.'))
+        if public_user and public_user in self:
+            raise UserError(_("Deleting the public user is not allowed. Deleting this profile will compromise critical functionalities."))
 
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
@@ -1605,12 +1608,15 @@ class UsersImplied(models.Model):
         if not values.get('groups_id'):
             return super(UsersImplied, self).write(values)
         users_before = self.filtered(lambda u: u._is_internal())
-        res = super(UsersImplied, self).write(values)
+        res = super(UsersImplied, self.with_context(no_add_implied_groups=True)).write(values)
         demoted_users = users_before.filtered(lambda u: not u._is_internal())
         if demoted_users:
             # demoted users are restricted to the assigned groups only
             vals = {'groups_id': [Command.clear()] + values['groups_id']}
             super(UsersImplied, demoted_users).write(vals)
+        if self.env.context.get('no_add_implied_groups'):
+            # in a recursive write, defer adding implied groups to the base call
+            return res
         # add implied groups for all users (in batches)
         users_batch = defaultdict(self.browse)
         for user in self:
@@ -1774,7 +1780,7 @@ class GroupsView(models.Model):
                     xml4.append(E.group(*right_group))
 
             xml4.append({'class': "o_label_nowrap"})
-            user_type_invisible = f'{user_type_field_name} != {group_employee.id}' if user_type_field_name else None
+            user_type_invisible = f'{user_type_field_name} != {group_employee.id}' if user_type_field_name else ''
 
             for xml_cat in sorted(xml_by_category.keys(), key=lambda it: it[0]):
                 master_category_name = xml_cat[1]
@@ -2146,6 +2152,17 @@ class UsersView(models.Model):
             })
         return res
 
+    def _get_view_postprocessed(self, view, arch, **options):
+        arch, models = super()._get_view_postprocessed(view, arch, **options)
+        if view == self.env.ref('base.view_users_form_simple_modif'):
+            tree = etree.fromstring(arch)
+            for node_field in tree.xpath('//field[@__groups_key__]'):
+                if node_field.get('name') in self.SELF_READABLE_FIELDS:
+                    node_field.attrib.pop('__groups_key__')
+            arch = etree.tostring(tree)
+        return arch, models
+
+
 class CheckIdentity(models.TransientModel):
     """ Wizard used to re-check the user's credentials (password) and eventually
     revoke access to his account to every device he has an active session on.
@@ -2302,6 +2319,12 @@ class APIKeysUser(models.Model):
                 'auth_method': 'apikey',
                 'mfa': 'default',
             }
+
+        if not user_agent_env.get('interactive', True) and self.env.user._rpc_api_keys_only():
+            _logger.info(
+                "Invalid API key or password-based authentication attempted for a non-interactive (API) "
+                "context that requires API key authentication only."
+            )
 
         raise AccessDenied()
 

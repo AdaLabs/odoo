@@ -10,7 +10,7 @@ import pprint
 from werkzeug import urls
 from werkzeug.exceptions import Forbidden
 
-from odoo import _, http
+from odoo import _, http, release
 from odoo.exceptions import ValidationError
 from odoo.http import request
 from odoo.tools import py_to_js_locale
@@ -44,7 +44,9 @@ class AdyenController(http.Controller):
         # provide the lang string as is (after adapting the format) and let Adyen find the best fit.
         lang_code = py_to_js_locale(request.context.get('lang')) or 'en-US'
         shopper_reference = partner_sudo and f'ODOO_PARTNER_{partner_sudo.id}'
-        partner_country_code = partner_sudo.country_id.code or None
+        partner_country_code = (
+            partner_sudo.country_id.code or provider_sudo.company_id.country_id.code or 'NL'
+        )
         data = {
             'merchantAccount': provider_sudo.adyen_merchant_account,
             'amount': formatted_amount,
@@ -88,12 +90,23 @@ class AdyenController(http.Controller):
         # Prepare the payment request to Adyen
         provider_sudo = request.env['payment.provider'].sudo().browse(provider_id).exists()
         tx_sudo = request.env['payment.transaction'].sudo().search([('reference', '=', reference)])
+        partner_country_code = (
+            tx_sudo.partner_country_id.code or provider_sudo.company_id.country_id.code or 'NL'
+        )
         data = {
             'merchantAccount': provider_sudo.adyen_merchant_account,
             'amount': {
                 'value': converted_amount,
                 'currency': request.env['res.currency'].browse(currency_id).name,  # ISO 4217
             },
+            'applicationInfo': {
+                'externalPlatform': {
+                    'name': 'Odoo',
+                    'version': release.version,
+                    'integrator': 'Odoo SA',
+                }
+            },
+            'countryCode': partner_country_code,  # ISO 3166-1 alpha-2 (e.g.: 'BE')
             'reference': reference,
             'paymentMethod': payment_method,
             'shopperReference': provider_sudo._adyen_compute_shopper_reference(partner_id),
@@ -120,6 +133,11 @@ class AdyenController(http.Controller):
                 f'/payment/adyen/return?merchantReference={reference}'
             ),
             **adyen_utils.include_partner_addresses(tx_sudo),
+            'lineItems': [{
+                'amountIncludingTax': converted_amount,
+                'quantity': '1',
+                'description': reference,
+            }],
         }
 
         # Force the capture delay on Adyen side if the provider is not configured for capturing

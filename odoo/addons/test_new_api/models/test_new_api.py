@@ -464,6 +464,7 @@ class Related(models.Model):
     foo_bar_sudo_id = fields.Many2one(string='foo_bar_sudo_id', related='foo_id.bar_id', related_sudo=True)
     foo_bar_sudo_id_name = fields.Char('foo_bar_sudo_id_name', related='foo_bar_sudo_id.name', related_sudo=False)
 
+    foo_float_id = fields.Float(related='foo_id.test_float')
 
 class RelatedFoo(models.Model):
     _name = _description = 'test_new_api.related_foo'
@@ -472,6 +473,7 @@ class RelatedFoo(models.Model):
     bar_id = fields.Many2one('test_new_api.related_bar')
     bar_name = fields.Char('bar_name', related='bar_id.name', related_sudo=False)
 
+    test_float = fields.Float(digits='ORM Precision')
 
 class RelatedBar(models.Model):
     _name = _description = 'test_new_api.related_bar'
@@ -1558,6 +1560,39 @@ class ComputeMember(models.Model):
             member.container_id = container.search([('name', '=', member.name)], limit=1)
 
 
+class ComputeCreator(models.Model):
+    """ This model has a computed field that creates a new record. """
+    _name = _description = 'test_new_api.compute.creator'
+
+    name = fields.Char()
+    created_id = fields.Many2one('test_new_api.compute.created', compute='_compute_created', store=True)
+
+    @api.depends('name')
+    def _compute_created(self):
+        model = self.env['test_new_api.compute.created']
+        for record in self:
+            record.created_id = (
+                model.search([('name', '=', record.name)], limit=1)
+                or model.create({'name': record.name})
+            )
+
+
+class ComputeCreated(models.Model):
+    """ This model has records created by another model, and has a stored
+    computed field. The purpose of that field is to make sure that flushing the
+    field above creates a record here and also flushes its computed field.
+    """
+    _name = _description = 'test_new_api.compute.created'
+
+    name = fields.Char()
+    value = fields.Integer(compute='_compute_value', store=True)
+
+    @api.depends('name')
+    def _compute_value(self):
+        for record in self:
+            record.value = len(record.name or "")
+
+
 class User(models.Model):
     _name = _description = 'test_new_api.user'
     _allow_sudo_commands = False
@@ -2220,3 +2255,14 @@ class SharedComputeMethod(models.Model):
                 record.start = 0
             if not record.end:
                 record.end = 10
+
+
+class BinaryTest(models.Model):
+    _name = _description = "binary.test"
+
+    img = fields.Image()
+    bin1 = fields.Binary()
+    bin2 = fields.Binary(compute="_compute_bin2")
+
+    def _compute_bin2(self):
+        self.bin2 = {}

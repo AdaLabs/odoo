@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import { beforeEach, describe, expect, test } from "@odoo/hoot";
-import { click, hover, leave, queryFirst, waitFor, press } from "@odoo/hoot-dom";
+import { click, hover, leave, queryFirst, waitFor, press, Deferred, edit } from "@odoo/hoot-dom";
 import { advanceTime, animationFrame, disableAnimations, runAllTimers } from "@odoo/hoot-mock";
 import { Component, useState, xml } from "@odoo/owl";
 import {
@@ -18,7 +18,7 @@ import { browser } from "@web/core/browser/browser";
 import { Dialog } from "@web/core/dialog/dialog";
 import { registry } from "@web/core/registry";
 import { session } from "@web/session";
-import { WebClient } from "../../../web/static/src/webclient/webclient";
+import { WebClient } from "@web/webclient/webclient";
 
 describe.current.tags("desktop");
 
@@ -28,7 +28,6 @@ class Partner extends models.Model {
     m2o = fields.Many2one({ relation: "product" });
 
     _views = {
-        search: `<search/>`,
         form: `<form>
             <field name="m2o"/>
         </form>`,
@@ -76,17 +75,16 @@ beforeEach(() => {
         log: () => {},
         dir: () => {},
     });
-    onRpc("/web/dataset/call_kw/web_tour.tour/consume", async (request) => {
-        const { params } = await request.json();
-        tourConsumed.push(params.args[0]);
+    onRpc("web_tour.tour", "consume", ({ args }) => {
+        tourConsumed.push(args[0]);
         const nextTour = tourRegistry
             .getEntries()
             .filter(([tourName]) => !tourConsumed.includes(tourName))
             .at(0);
         return (nextTour && { name: nextTour.at(0) }) || false;
     });
-    onRpc("/web/dataset/call_kw/res.users/switch_tour_enabled", async () => true);
-    onRpc("/web/dataset/call_kw/web_tour.tour/get_tour_json_by_name", async () => ({
+    onRpc("res.users", "switch_tour_enabled", () => true);
+    onRpc("web_tour.tour", "get_tour_json_by_name", () => ({
         name: "tour1",
         steps: [
             { trigger: "button.foo", run: "click" },
@@ -712,7 +710,7 @@ test("Tour backward when the pointed element disappear and ignore warn step", as
     registry.category("web_tour.tours").add("tour1", {
         steps: () => [
             { trigger: "button.foo", run: "click" },
-            { trigger: "button.bar" },
+            { trigger: "button.foo" },
             { trigger: "button.bar", run: "click" },
         ],
     });
@@ -749,7 +747,7 @@ test("Tour backward when the pointed element disappear and ignore warn step", as
     await contains("button.bar").click();
     await animationFrame();
     expect(".o_tour_pointer").toHaveCount(0);
-    expect.verifySteps(["Step 'button.bar' ignored.", "Step 'button.bar' ignored."]);
+    expect.verifySteps(["Step 'button.foo' ignored.", "Step 'button.foo' ignored."]);
 });
 
 test("Tour started by the URL", async () => {
@@ -1079,5 +1077,118 @@ test("validating click on autocomplete item by pressing Enter", async () => {
     await animationFrame();
     expect(".o_tour_pointer").toHaveCount(1);
     await contains(".o_form_button_save").click();
+    expect(".o_tour_pointer").toHaveCount(0);
+});
+
+test("Tour don't backward when dropdown loading", async () => {
+    Product._records = [{ name: "Harry test 1" }, { name: "Harry test 2" }];
+    registry.category("web_tour.tours").add("rainbow_tour", {
+        steps: () => [
+            {
+                trigger: ".o-autocomplete--input",
+                run: "click",
+            },
+            {
+                trigger: ".o-autocomplete--dropdown-item:eq(1)",
+                run: "click",
+            },
+            {
+                trigger: ".o_form_button_save",
+                run: "click",
+            },
+        ],
+    });
+
+    const def = new Deferred();
+    let makeItLag = false;
+    await mountWithCleanup(WebClient);
+
+    await getService("action").doAction({
+        res_model: "partner",
+        type: "ir.actions.act_window",
+        views: [[false, "form"]],
+    });
+
+    onRpc("product", "name_search", async () => {
+        if (makeItLag) {
+            await def;
+        }
+    });
+
+    getService("tour_service").startTour("rainbow_tour", { mode: "manual" });
+    await animationFrame();
+
+    expect(".o_tour_pointer").toHaveCount(1);
+    await contains(".o-autocomplete--input").click();
+    await waitFor(".o-autocomplete--dropdown-item:eq(1)");
+    makeItLag = true;
+    await edit("Harry");
+    await advanceTime(400);
+    await waitFor(".o_loading");
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(0);
+    def.resolve();
+
+    await waitFor(".o-autocomplete--dropdown-item:eq(1)");
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+    await contains(".o-autocomplete--dropdown-item:eq(1)").click();
+    expect(".o_tour_pointer").toHaveCount(1);
+    await contains(".o_form_button_save").click();
+    expect(".o_tour_pointer").toHaveCount(0);
+});
+
+test("Don't backward when action manager is busy", async () => {
+    registry.category("web_tour.tours").add("tour1", {
+        steps: () => [
+            { trigger: "button.foo", run: "click" },
+            { trigger: "button.bar", run: "click" },
+        ],
+    });
+
+    class Dummy extends Component {
+        static props = ["*"];
+        state = useState({ bool: true });
+        static components = {};
+        static template = xml`
+            <button class="fool w-100" t-on-click="() => { state.bool = true; }">You fool</button>
+            <button class="foo w-100" t-if="state.bool" t-on-click="() => { state.bool = false; }">Foo</button>
+            <button class="bar w-100" t-if="!state.bool">Bar</button>
+        `;
+    }
+
+    const comp = await mountWithCleanup(Dummy);
+
+    await getService("tour_service").startTour("tour1", { mode: "manual" });
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+
+    await contains("button.foo").click();
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+
+    comp.env.bus.trigger("ACTION_MANAGER:UPDATE");
+    await animationFrame();
+
+    await contains("button.fool").click();
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(0);
+
+    await contains("button.foo").click();
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+
+    comp.env.bus.trigger("ACTION_MANAGER:UI-UPDATED");
+
+    await contains("button.fool").click();
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+
+    await contains("button.foo").click();
+    await animationFrame();
+    expect(".o_tour_pointer").toHaveCount(1);
+
+    await contains("button.bar").click();
+    await animationFrame();
     expect(".o_tour_pointer").toHaveCount(0);
 });

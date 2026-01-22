@@ -1,7 +1,7 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* html_editor
-# 
+# * html_editor
+#
 # Translators:
 # Sanna Edelman <direct@generare.com>, 2024
 # Tiffany Chang, 2024
@@ -19,20 +19,22 @@
 # Ossi Mantylahti <ossi.mantylahti@obs-solutions.fi>, 2025
 # Jarmo Kortetjärvi <jarmo.kortetjarvi@gmail.com>, 2025
 # Wil Odoo, 2025
-# 
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-19 20:37+0000\n"
-"PO-Revision-Date: 2024-09-29 00:00+0000\n"
-"Last-Translator: Wil Odoo, 2025\n"
-"Language-Team: Finnish (https://app.transifex.com/odoo/teams/41243/fi/)\n"
+"POT-Creation-Date: 2025-12-29 18:37+0000\n"
+"PO-Revision-Date: 2025-11-21 02:29+0000\n"
+"Last-Translator: Weblate <noreply-mt-weblate@weblate.org>\n"
+"Language-Team: Finnish <https://translate.odoo.com/projects/odoo-18/"
+"html_editor/fi/>\n"
+"Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: fi\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.12.2\n"
 
 #. module: html_editor
 #. odoo-javascript
@@ -134,8 +136,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/html_editor/controllers/main.py:0
 msgid ""
-"Action %s not found, link preview is not available, please check your url is"
-" correct"
+"Action %s not found, link preview is not available, please check your url is "
+"correct"
 msgstr ""
 "Toimintaa %s ei löytynyt, linkin esikatselu ei ole käytettävissä, tarkista, "
 "että URL on oikein"
@@ -294,24 +296,28 @@ msgstr "Banneri"
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Danger"
 msgstr "Vaara-banneri"
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Info"
 msgstr "Bannerin tiedot"
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Success"
 msgstr "Menestys-banneri"
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/html_migrations/migration-1.2.js:0
 #: code:addons/html_editor/static/src/main/banner_plugin.js:0
 msgid "Banner Warning"
 msgstr "Varoitus-banneri"
@@ -854,12 +860,6 @@ msgstr "Väliotsikko 6"
 #. module: html_editor
 #. odoo-javascript
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
-msgid "Hide Dailymotion logo"
-msgstr "Piilota Dailymotion-logo"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
 msgid "Hide fullscreen button"
 msgstr "Piilota koko näytön painike"
 
@@ -868,12 +868,6 @@ msgstr "Piilota koko näytön painike"
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
 msgid "Hide player controls"
 msgstr "Piilota toiston ohjainpainikkeet"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.js:0
-msgid "Hide sharing button"
-msgstr "Piilota jakopainike"
 
 #. module: html_editor
 #. odoo-javascript
@@ -1092,6 +1086,12 @@ msgstr "Lisää allekirjoituksesi"
 
 #. module: html_editor
 #. odoo-javascript
+#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
+msgid "Instagram"
+msgstr "Instagram"
+
+#. module: html_editor
+#. odoo-javascript
 #: code:addons/html_editor/static/src/main/link/link_popover.xml:0
 msgid "Label"
 msgstr "Otsikko"
@@ -1131,8 +1131,7 @@ msgstr "Linkki kopioitu leikepöydälle."
 #. odoo-python
 #: code:addons/html_editor/controllers/main.py:0
 msgid ""
-"Link preview is not available because %s, please check if your url is "
-"correct"
+"Link preview is not available because %s, please check if your url is correct"
 msgstr ""
 "Linkin esikatselu ei ole käytettävissä, koska %s, tarkista, onko URL oikea"
 
@@ -1969,12 +1968,6 @@ msgstr "Sinun on määritettävä joko data tai url luodaksesi liitetiedoston."
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
-msgid "Youku"
-msgstr "Youku"
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/others/embedded_components/core/video/video.xml:0
 msgid "Your browser does not support iframe."
 msgstr "Selaimesi ei tue iframea."
@@ -2005,12 +1998,6 @@ msgstr "Loitonna"
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "all"
-msgstr "kaikki"
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/main/chatgpt/chatgpt_alternatives_dialog.xml:0
 msgid "alternatives..."
 msgstr "vaihtoehdot..."
@@ -2020,12 +2007,6 @@ msgstr "vaihtoehdot..."
 #: code:addons/html_editor/static/src/main/media/media_dialog/video_selector.xml:0
 msgid "and"
 msgstr "ja"
-
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "database"
-msgstr "tietokanta"
 
 #. module: html_editor
 #. odoo-javascript
@@ -2047,12 +2028,6 @@ msgstr "tiedosto"
 
 #. module: html_editor
 #. odoo-javascript
-#: code:addons/html_editor/static/src/main/media/media_dialog/file_selector.xml:0
-msgid "media-library"
-msgstr "media-kirjasto"
-
-#. module: html_editor
-#. odoo-javascript
 #: code:addons/html_editor/static/src/main/link/link_popover.xml:0
 msgid "or"
 msgstr "tai"
@@ -2063,20 +2038,11 @@ msgstr "tai"
 msgid "videos"
 msgstr "videot"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.urlDescription}}"
-msgstr "{{state.urlDescription}}"
+#~ msgid "Hide Dailymotion logo"
+#~ msgstr "Piilota Dailymotion-logo"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.urlTitle}}"
-msgstr "{{state.urlTitle}}"
+#~ msgid "Hide sharing button"
+#~ msgstr "Piilota jakopainike"
 
-#. module: html_editor
-#. odoo-javascript
-#: code:addons/html_editor/static/src/main/link/link_popover.xml:0
-msgid "{{state.url}}"
-msgstr "{{state.url}}"
+#~ msgid "Youku"
+#~ msgstr "Youku"

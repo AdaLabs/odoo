@@ -59,8 +59,9 @@ export class ImagePlugin extends Plugin {
         toolbar_namespaces: [
             {
                 id: "image",
-                isApplied: (traversedNodes) =>
-                    traversedNodes.every(
+                isApplied: (targetedNodes) =>
+                    targetedNodes.length &&
+                    targetedNodes.every(
                         // All nodes should be images or its ancestors
                         (node) => node.nodeName === "IMG" || node.querySelector?.("img")
                     ),
@@ -132,6 +133,7 @@ export class ImagePlugin extends Plugin {
                 title: _t("Resize Default"),
                 text: _t("Default"),
                 isActive: () => this.hasImageSize(""),
+                isAvailable: () => this.config.allowImageResize ?? true,
             },
             {
                 id: "resize_100",
@@ -141,6 +143,7 @@ export class ImagePlugin extends Plugin {
                 title: _t("Resize Full"),
                 text: "100%",
                 isActive: () => this.hasImageSize("100%"),
+                isAvailable: () => this.config.allowImageResize ?? true,
             },
             {
                 id: "resize_50",
@@ -150,6 +153,7 @@ export class ImagePlugin extends Plugin {
                 title: _t("Resize Half"),
                 text: "50%",
                 isActive: () => this.hasImageSize("50%"),
+                isAvailable: () => this.config.allowImageResize ?? true,
             },
             {
                 id: "resize_25",
@@ -159,6 +163,7 @@ export class ImagePlugin extends Plugin {
                 title: _t("Resize Quarter"),
                 text: "25%",
                 isActive: () => this.hasImageSize("25%"),
+                isAvailable: () => this.config.allowImageResize ?? true,
             },
             {
                 id: "image_transform",
@@ -166,6 +171,7 @@ export class ImagePlugin extends Plugin {
                 title: _t("Transform the picture (click twice to reset transformation)"),
                 Component: ImageTransformButton,
                 props: this.getImageTransformProps(),
+                isAvailable: () => this.config.allowImageTransform ?? true,
             },
             {
                 id: "image_delete",
@@ -202,63 +208,66 @@ export class ImagePlugin extends Plugin {
     }
 
     setImagePadding({ size } = {}) {
-        const selectedImg = this.getSelectedImage();
-        if (!selectedImg) {
+        const targetedImg = this.getTargetedImage();
+        if (!targetedImg) {
             return;
         }
-        for (const classString of selectedImg.classList) {
+        for (const classString of targetedImg.classList) {
             if (classString.match(/^p-[0-9]$/)) {
-                selectedImg.classList.remove(classString);
+                targetedImg.classList.remove(classString);
             }
         }
-        selectedImg.classList.add(`p-${size}`);
+        targetedImg.classList.add(`p-${size}`);
         this.dependencies.history.addStep();
     }
     resizeImage({ size } = {}) {
-        const selectedImg = this.getSelectedImage();
-        if (!selectedImg) {
+        const targetedImg = this.getTargetedImage();
+        if (!targetedImg) {
             return;
         }
-        selectedImg.style.width = size || "";
+        targetedImg.style.width = size || "";
         this.dependencies.history.addStep();
     }
 
     setImageShape(className, { excludeClasses = [] } = {}) {
-        const selectedImg = this.getSelectedImage();
-        if (!selectedImg) {
+        const targetedImg = this.getTargetedImage();
+        if (!targetedImg) {
             return;
         }
         for (const classString of excludeClasses) {
-            if (selectedImg.classList.contains(classString)) {
-                selectedImg.classList.remove(classString);
+            if (targetedImg.classList.contains(classString)) {
+                targetedImg.classList.remove(classString);
             }
         }
-        selectedImg.classList.toggle(className);
+        targetedImg.classList.toggle(className);
         this.dependencies.history.addStep();
     }
 
     previewImage() {
-        const selectedImg = this.getSelectedImage();
-        if (!selectedImg) {
+        const targetedImg = this.getTargetedImage();
+        if (!targetedImg) {
             return;
         }
         const fileModel = {
             isImage: true,
             isViewable: true,
-            displayName: selectedImg.src,
-            defaultSource: selectedImg.src,
-            downloadUrl: selectedImg.src,
+            displayName: targetedImg.src,
+            defaultSource: targetedImg.src,
+            downloadUrl: targetedImg.src,
         };
         this.document.getSelection().collapseToEnd();
         this.fileViewer.open(fileModel);
     }
 
     deleteImage() {
-        const selectedImg = this.getSelectedImage();
-        if (selectedImg) {
-            const anchorNode = selectedImg.parentElement;
-            let anchorOffset = childNodeIndex(selectedImg);
-            selectedImg.remove();
+        const targetedImg = this.getTargetedImage();
+        if (targetedImg) {
+            if (this.delegateTo("delete_image_overrides", targetedImg)) {
+                return;
+            }
+            const anchorNode = targetedImg.parentElement;
+            let anchorOffset = childNodeIndex(targetedImg);
+            targetedImg.remove();
             // When an image is added as the first element of a <p> tag,
             // the `dom_plugin.insert` method automatically creates a #text node just before the <img>.
             // After removing the image and setting the selection at the <p> tag (offset 0),
@@ -274,27 +283,34 @@ export class ImagePlugin extends Plugin {
         }
     }
 
+    /**
+     * @deprecated
+     */
     getSelectedImage() {
-        const selectedNodes = this.dependencies.selection.getSelectedNodes();
-        return selectedNodes.find((node) => node.tagName === "IMG");
+        return this.getTargetedImage();
+    }
+
+    getTargetedImage() {
+        const targetedNodes = this.dependencies.selection.getTargetedNodes();
+        return targetedNodes.find((node) => node.tagName === "IMG");
     }
 
     hasImageSize(size) {
-        const selectedImg = this.getSelectedImage();
-        return selectedImg?.style?.width === size;
+        const targetedImg = this.getTargetedImage();
+        return targetedImg?.style?.width === size;
     }
 
     isSelectionShaped(shape) {
-        const selectedNodes = this.dependencies.selection
-            .getTraversedNodes()
+        const targetedNodes = this.dependencies.selection
+            .getTargetedNodes()
             .filter((n) => n.tagName === "IMG" && n.classList.contains(shape));
-        return selectedNodes.length > 0;
+        return targetedNodes.length > 0;
     }
 
     getImageAttribute(attributeName) {
-        const selectedNodes = this.dependencies.selection.getSelectedNodes();
-        const selectedImg = selectedNodes.find((node) => node.tagName === "IMG");
-        return selectedImg.getAttribute(attributeName) || undefined;
+        const targetedNodes = this.dependencies.selection.getTargetedNodes();
+        const targetedImg = targetedNodes.find((node) => node.tagName === "IMG");
+        return targetedImg.getAttribute(attributeName) || undefined;
     }
 
     /**
@@ -329,12 +345,12 @@ export class ImagePlugin extends Plugin {
     }
 
     updateImageDescription({ description, tooltip } = {}) {
-        const selectedImg = this.getSelectedImage();
-        if (!selectedImg) {
+        const targetedImg = this.getTargetedImage();
+        if (!targetedImg) {
             return;
         }
-        selectedImg.setAttribute("alt", description);
-        selectedImg.setAttribute("title", tooltip);
+        targetedImg.setAttribute("alt", description);
+        targetedImg.setAttribute("title", tooltip);
         this.dependencies.history.addStep();
     }
 

@@ -255,18 +255,19 @@ class StockMoveLine(models.Model):
         if self._context.get('avoid_putaway_rules'):
             return
         self = self.with_context(do_not_unreserve=True)
-        for package, smls in groupby(self, lambda sml: sml.result_package_id):
+        for (package), smls in groupby(self, lambda sml: (sml.result_package_id)):
             smls = self.env['stock.move.line'].concat(*smls)
+            locations = smls.move_id.location_dest_id.child_internal_location_ids
             excluded_smls = set(smls.ids)
             if package.package_type_id:
-                best_loc = smls.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls, products=smls.product_id)._get_putaway_strategy(self.env['product.product'], package=package)
+                best_loc = smls.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls, products=smls.product_id, locations=locations)._get_putaway_strategy(self.env['product.product'], package=package)
                 smls.location_dest_id = smls.package_level_id.location_dest_id = best_loc
             elif package:
                 used_locations = set()
                 for sml in smls:
                     if len(used_locations) > 1:
                         break
-                    sml.location_dest_id = sml.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls)._get_putaway_strategy(sml.product_id, quantity=sml.quantity)
+                    sml.location_dest_id = sml.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls, locations=locations)._get_putaway_strategy(sml.product_id, quantity=sml.quantity)
                     excluded_smls.discard(sml.id)
                     used_locations.add(sml.location_dest_id)
                 if len(used_locations) > 1:
@@ -276,7 +277,7 @@ class StockMoveLine(models.Model):
                     smls.package_level_id.location_dest_id = smls.location_dest_id
             else:
                 for sml in smls:
-                    putaway_loc_id = sml.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls)._get_putaway_strategy(
+                    putaway_loc_id = sml.move_id.location_dest_id.with_context(exclude_sml_ids=excluded_smls, locations=locations)._get_putaway_strategy(
                         sml.product_id, quantity=sml.quantity, packaging=sml.move_id.product_packaging_id,
                     )
                     if putaway_loc_id != sml.location_dest_id:
@@ -395,7 +396,7 @@ class StockMoveLine(models.Model):
                 reservation = not move._should_bypass_reservation()
             else:
                 reservation = product.is_storable and not location.should_bypass_reservation()
-            if move_line.quantity and reservation:
+            if move_line.quantity_product_uom and reservation:
                 self.env.context.get('reserved_quant', self.env['stock.quant'])._update_reserved_quantity(
                     product, location, move_line.quantity_product_uom, lot_id=move_line.lot_id, package_id=move_line.package_id, owner_id=move_line.owner_id)
 
@@ -585,6 +586,10 @@ class StockMoveLine(models.Model):
     def _sorting_move_lines(self):
         return (self.id,)
 
+    def _exclude_requiring_lot(self):
+        self.ensure_one()
+        return self.move_id.picking_type_id or self.is_inventory or self.lot_id or self.move_id.scrap_id
+
     def _action_done(self):
         """ This method is called during a move's `action_done`. It'll actually move a quant from
         the source location to the destination location, and unreserve if needed in the source
@@ -621,7 +626,7 @@ class StockMoveLine(models.Model):
                 if ml.product_id.tracking == 'none':
                     continue
                 picking_type_id = ml.move_id.picking_type_id
-                if not picking_type_id and not ml.is_inventory and not ml.lot_id:
+                if not ml._exclude_requiring_lot():
                     ml_ids_tracked_without_lot.add(ml.id)
                     continue
                 if not picking_type_id or ml.lot_id or (not picking_type_id.use_create_lots and not picking_type_id.use_existing_lots):
@@ -686,7 +691,7 @@ class StockMoveLine(models.Model):
             available_qty, in_date = ml._synchronize_quant(-ml.quantity_product_uom, ml.location_id)
             ml._synchronize_quant(ml.quantity_product_uom, ml.location_dest_id, package=ml.result_package_id, in_date=in_date)
             if available_qty < 0:
-                ml._free_reservation(
+                ml.with_context(quants_cache=None)._free_reservation(
                     ml.product_id, ml.location_id,
                     abs(available_qty), lot_id=ml.lot_id, package_id=ml.package_id,
                     owner_id=ml.owner_id, ml_ids_to_ignore=ml_ids_to_ignore)
@@ -844,10 +849,12 @@ class StockMoveLine(models.Model):
         move = move or move_line.move_id
         uom = move.product_uom or move_line.product_uom_id
         name = move.product_id.display_name
-        description = move.description_picking
-        if description == name or description == move.product_id.name:
-            description = False
+        description = move.description_picking or ""
         product = move.product_id
+        if description.startswith(name):
+            description = description.removeprefix(name).strip()
+        elif description.startswith(product.name):
+            description = description.removeprefix(product.name).strip()
         line_key = f'{product.id}_{product.display_name}_{description or ""}_{uom.id}_{move.product_packaging_id or ""}'
         return {
             'line_key': line_key,

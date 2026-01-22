@@ -1,8 +1,8 @@
 import { Plugin } from "@html_editor/plugin";
 import { baseContainerGlobalSelector } from "@html_editor/utils/base_container";
 import { closestBlock } from "@html_editor/utils/blocks";
-import { isEmptyBlock } from "@html_editor/utils/dom_info";
-import { closestElement } from "@html_editor/utils/dom_traversal";
+import { isEditorTab, isEmptyBlock } from "@html_editor/utils/dom_info";
+import { closestElement, descendants } from "@html_editor/utils/dom_traversal";
 import { omit, pick } from "@web/core/utils/objects";
 
 /** @typedef {import("./powerbox/powerbox_plugin").PowerboxCommand} PowerboxCommand */
@@ -54,6 +54,7 @@ export class PowerButtonsPlugin extends Plugin {
     resources = {
         layout_geometry_change_handlers: this.updatePowerButtons.bind(this),
         selectionchange_handlers: this.updatePowerButtons.bind(this),
+        post_mount_component_handlers: this.updatePowerButtons.bind(this),
     };
 
     setup() {
@@ -102,10 +103,14 @@ export class PowerButtonsPlugin extends Plugin {
         }
         const block = closestBlock(editableSelection.anchorNode);
         const element = closestElement(editableSelection.anchorNode);
+        const blockRect = block.getBoundingClientRect();
+        const editableRect = this.editable.getBoundingClientRect();
         if (
             editableSelection.isCollapsed &&
-            element?.matches(baseContainerGlobalSelector) &&
+            block?.matches(baseContainerGlobalSelector) &&
+            editableRect.bottom > blockRect.top &&
             isEmptyBlock(block) &&
+            !descendants(block).some(isEditorTab) &&
             !this.services.ui.isSmall &&
             !closestElement(editableSelection.anchorNode, "td") &&
             !block.style.textAlign &&
@@ -121,7 +126,7 @@ export class PowerButtonsPlugin extends Plugin {
                 const shouldHide = Boolean(isAvailable && !isAvailable(editableSelection));
                 buttonElement.classList.toggle("d-none", shouldHide); // 2nd arg must be a boolean
             }
-            this.setPowerButtonsPosition(block, direction);
+            this.setPowerButtonsPosition(block, blockRect, direction);
         }
     }
 
@@ -143,12 +148,11 @@ export class PowerButtonsPlugin extends Plugin {
      * @param {HTMLElement} block
      * @param {string} direction
      */
-    setPowerButtonsPosition(block, direction) {
+    setPowerButtonsPosition(block, blockRect, direction) {
         const overlayStyles = this.powerButtonsOverlay.style;
         // Resetting the position of the power buttons.
         overlayStyles.top = "0px";
         overlayStyles.left = "0px";
-        const blockRect = block.getBoundingClientRect();
         const buttonsRect = this.powerButtonsContainer.getBoundingClientRect();
         const placeholderWidth = this.getPlaceholderWidth(block) + 20;
         if (direction === "rtl") {

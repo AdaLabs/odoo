@@ -104,6 +104,7 @@ var SnippetEditor = publicWidget.Widget.extend({
         }
         this.displayOverlayOptions = false;
         this._$toolbarContainer = $();
+        this.isRtl = this.options.direction === "rtl";
 
         this.__isStarted = new Promise(resolve => {
             this.__isStartedResolveFunc = resolve;
@@ -932,7 +933,7 @@ var SnippetEditor = publicWidget.Widget.extend({
                 const gridRowSize = gridUtils.rowSize;
                 const boundedYMousePosition = Math.min(args.y, targetRect.bottom - gridRowSize);
                 this.mousePositionYOnElement = boundedYMousePosition - targetRect.y;
-                this.mousePositionXOnElement = args.x - targetRect.x;
+                this.mousePositionXOnElement = (args.x - targetRect.x) * (this.isRtl ? -1 : 1);
                 this._onDragAndDropStart(args);
             },
             onDragEnd: (...args) => {
@@ -1426,7 +1427,7 @@ var SnippetEditor = publicWidget.Widget.extend({
 
             const style = window.getComputedStyle(this.$target[0]);
             const top = parseFloat(style.top);
-            const left = parseFloat(style.left);
+            const left = parseFloat(this.isRtl ? style.right : style.left);
 
             const rowStart = Math.round(top / (gridProp.rowSize + gridProp.rowGap)) + 1;
             const columnStart = Math.round(left / (gridProp.columnSize + gridProp.columnGap)) + 1;
@@ -1656,6 +1657,14 @@ var SnippetEditor = publicWidget.Widget.extend({
             return;
         }
         ev.data.show = this._toggleVisibilityStatus(ev.data.show);
+        // Toggle the value of ev.data.show so that when trigger_up is called,
+        // it passes the value `true` to its parent. Additionally, in this
+        // block, we are calling `trigger_up` with `activate_snippet` to false,
+        // which disables options for that specific block.
+        if (this.$target[0] === ev.target.$target[0] && !ev.data.show) {
+            this.trigger_up("activate_snippet", { $snippet: false });
+            ev.data.show = true;
+        }
     },
     /**
      * @private
@@ -1736,10 +1745,11 @@ var SnippetEditor = publicWidget.Widget.extend({
         }
         const columnEl = this.$target[0];
         const rowEl = columnEl.parentNode;
+        const rowElRect = rowEl.getBoundingClientRect();
 
         // Computing the rowEl position.
-        const rowElTop = rowEl.getBoundingClientRect().top;
-        const rowElLeft = rowEl.getBoundingClientRect().left;
+        const rowElTop = rowElRect.top;
+        const rowElLeft = rowElRect.left;
 
         // Getting the column dimensions.
         const borderWidth = parseFloat(window.getComputedStyle(columnEl).borderWidth);
@@ -1749,14 +1759,25 @@ var SnippetEditor = publicWidget.Widget.extend({
         // Placing the column where the mouse is.
         let top = y - rowElTop - this.mousePositionYOnElement;
         const bottom = top + columnHeight;
-        let left = x - rowElLeft - this.mousePositionXOnElement;
+
+        let left;
+        if (this.isRtl) {
+            const rowElRight = rowElRect.right;
+            left = rowElRight - x - this.mousePositionXOnElement - columnWidth;
+        } else {
+            left = x - rowElLeft - this.mousePositionXOnElement;
+        }
 
         // Horizontal and top overflow.
         left = clamp(left, 0, rowEl.clientWidth - columnWidth);
         top = top < 0 ? 0 : top;
 
         columnEl.style.top = top + 'px';
-        columnEl.style.left = left + 'px';
+        if (this.isRtl) {
+            columnEl.style.right = left + 'px';
+        } else {
+            columnEl.style.left = left + 'px';
+        }
 
         // Computing the drag helper corresponding grid area.
         const gridProp = gridUtils._getGridProperties(rowEl);
@@ -1995,15 +2016,15 @@ class SnippetsMenu extends Component {
         });
 
         useBus(this.props.bus, "INSERT_SNIPPET", ({ detail }) => {
-            const { snippetSelector, block } = detail;
+            const { snippetSelector } = detail;
             this._execWithLoadingEffect(() => {
                 const snippet = [...this.snippets.values()].find((snippet) => {
                     return snippet.baseBody.matches(snippetSelector);
                 });
-                if (snippet && block) {
+                if (snippet) {
                     const clonedBody = snippet.baseBody.cloneNode(true);
                     clonedBody.classList.remove(".oe_snippet_body");
-                    block.after(clonedBody);
+                    this.options.wysiwyg.odooEditor.execCommand("insert", clonedBody);
                     // This call will block the mutex so it is not awaited.
                     this.callPostSnippetDrop($(clonedBody));
                 }
@@ -2922,6 +2943,9 @@ class SnippetsMenu extends Component {
                 }
                 resolve(null);
             }).then(async editorToEnable => {
+                if (editorToEnable && editorToEnable.$target[0] && !editorToEnable.$target[0].closest("body")) {
+                    return null;
+                }
                 if (!previewMode && this._enabledEditorHierarchy[0] === editorToEnable
                         || ifInactiveOptions && this._enabledEditorHierarchy.includes(editorToEnable)) {
                     return editorToEnable;
@@ -3236,6 +3260,11 @@ class SnippetsMenu extends Component {
         if (websiteFormEditorOptionsEl) {
             websiteFormEditorOptionsEl.dataset.dropExcludeAncestor = "form";
         }
+        // TODO: Remove in master and add it in the template.
+        const filterSelectEl = $html.find("we-select").has("we-button[data-gl-filter]")[0];
+        if (filterSelectEl) {
+            filterSelectEl.dataset.name = "glfilter_select_opt";
+        }
         this.templateOptions = [];
         var selectors = [];
         var $styles = $html.find('[data-selector]');
@@ -3371,9 +3400,10 @@ class SnippetsMenu extends Component {
                 return snippet.category.id === "snippet_custom";
             });
             for (const customSnippet of customSnippets) {
-                // The "s_button" has a numeric value added to its name when it
-                // is custom, so we need to consider this in the search.
-                const customSnippetName = /s_button_\d+/.test(customSnippet.name) ?
+                // Custom "s_button" snippets add a unique suffix to their name
+                // (e.g. s_button_xxx). To reliably detect custom buttons, we
+                // normalize the name by removing this suffix.
+                const customSnippetName = customSnippet.name.startsWith("s_button_") ?
                     "s_button" :
                     customSnippet.name;
 
@@ -4195,9 +4225,10 @@ class SnippetsMenu extends Component {
             this.lastElement = false;
         });
 
-        if (!$target.closest('we-button, we-toggler, we-select, .o_we_color_preview').length) {
+        if (!$target.closest('we-button, we-toggler, we-select, .o_we_color_preview').length && !this._isColorpickerClick) {
             this._closeWidgets();
         }
+        delete this._isColorpickerClick;
         if (!$target.closest('body > *').length || $target.is('#iframe_target')) {
             return;
         }
@@ -4509,6 +4540,9 @@ class SnippetsMenu extends Component {
             clearTimeout(enableTimeoutID);
             reenable();
         });
+        if (ev.target.closest(".o_colorpicker_widget")) {
+            this._isColorpickerClick = true;
+        }
     }
     /**
      * @private

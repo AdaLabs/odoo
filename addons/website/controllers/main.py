@@ -5,6 +5,7 @@ import os
 import logging
 import re
 import requests
+import urllib.parse
 import werkzeug.urls
 import werkzeug.utils
 import werkzeug.wrappers
@@ -66,9 +67,9 @@ class QueryURL:
                     paths[key] = "%s" % value
             elif value:
                 if isinstance(value, (list, set)):
-                    fragments.append(werkzeug.urls.url_encode([(key, item) for item in value]))
+                    fragments.append(urllib.parse.urlencode([(key, item) for item in value]))
                 else:
-                    fragments.append(werkzeug.urls.url_encode([(key, value)]))
+                    fragments.append(urllib.parse.urlencode([(key, value)]))
         for key in path_args:
             value = paths.get(key)
             if value is not None:
@@ -167,11 +168,12 @@ class Website(Home):
         """
         path = '/' + path
         mode_edit = bool(kw.pop('enable_editor', False))
+        mode_debug = kw.get('debug', 0)
         if kw:
             path += '?' + werkzeug.urls.url_encode(kw)
 
         if request.env.user._is_internal():
-            path = request.website.get_client_action_url(path, mode_edit)
+            path = request.website.get_client_action_url(path, mode_edit, mode_debug)
 
         return request.redirect(path)
 
@@ -228,7 +230,15 @@ class Website(Home):
         # Don't use `request.website.domain` here, the template is in charge of
         # detecting if the current URL is the domain one and add a `Disallow: /`
         # if it's not the case to prevent the crawler to continue.
-        return request.render('website.robots', {'url_root': request.httprequest.url_root}, mimetype='text/plain')
+        allowed_routes = self._get_allowed_robots_routes()
+        content = request.env['ir.ui.view']._render_template('website.robots',
+            {'url_root': request.httprequest.url_root})
+
+        if allowed_routes:
+            content += '\nUser-agent: *'
+            content += '\n' + '\n'.join(f"Allow: {route}" for route in allowed_routes)
+
+        return request.make_response(content, headers=[('Content-Type', 'text/plain')])
 
     @http.route('/sitemap.xml', type='http', auth="public", website=True, multilang=False, sitemap=False)
     def sitemap_xml_index(self, **kwargs):
@@ -663,7 +673,7 @@ class Website(Home):
         # If that URL is also a menu, we update it accordingly.
         # NB: we don't want to slugify on menu creation as it could redirect
         # towards files (with spaces, apostrophes, etc.).
-        menu = request.env['website.menu'].search([('url', '=', '/' + path)])
+        menu = request.env['website.menu'].search([('url', '=', '/' + path), ('page_id', '=', False)])
         if menu:
             menu.page_id = page['page_id']
 
@@ -797,7 +807,7 @@ class Website(Home):
             req.raise_for_status()
             response = req.content
         except OSError:
-            return []
+            return json.dumps([])
         xmlroot = ET.fromstring(response)
         return json.dumps([sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']])
 

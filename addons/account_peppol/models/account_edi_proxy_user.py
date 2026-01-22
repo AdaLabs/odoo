@@ -7,7 +7,6 @@ from odoo import _, api, fields, models, modules, tools
 from odoo.addons.account_edi_proxy_client.models.account_edi_proxy_user import AccountEdiProxyError
 from odoo.addons.account_peppol.tools.demo_utils import handle_demo
 from odoo.exceptions import UserError
-from odoo.tools import split_every
 
 _logger = logging.getLogger(__name__)
 BATCH_SIZE = 50
@@ -78,18 +77,14 @@ class AccountEdiProxyClientUser(models.Model):
     @handle_demo
     def _check_company_on_peppol(self, company, edi_identification):
         if (
-            not company.account_peppol_migration_key
-            and (participant_info := company.partner_id._get_participant_info(edi_identification)) is not None
+            not company.sudo().account_peppol_migration_key
+            and (participant_info := company.partner_id._peppol_lookup_participant(edi_identification)) is not None
             and company.partner_id._check_peppol_participant_exists(participant_info, edi_identification, check_company=True)
         ):
             error_msg = _(
                 "A participant with these details has already been registered on the network. "
-                "If you have previously registered to an alternative Peppol service, please deregister from that service, "
-                "or request a migration key before trying again. "
+                "If you have previously registered to a Peppol service, please deregister."
             )
-
-            if isinstance(participant_info, str):
-                error_msg += _("The Peppol service that is used is likely to be %s.", participant_info)
             raise UserError(error_msg)
 
     # -------------------------------------------------------------------------
@@ -134,13 +129,13 @@ class AccountEdiProxyClientUser(models.Model):
         :return: `True` if the document was saved, `False` if it was not
         """
         self.ensure_one()
-        journal = self.company_id.peppol_purchase_journal_id
+        journal, move_type = self._peppol_get_import_journal_and_move_type(attachment)
         if not journal:
             return False
 
         move = self.env['account.move'].create({
             'journal_id': journal.id,
-            'move_type': 'in_invoice',
+            'move_type': move_type,
             'peppol_move_state': peppol_state,
             'peppol_message_uuid': uuid,
         })
@@ -155,10 +150,18 @@ class AccountEdiProxyClientUser(models.Model):
             ),
             attachment_ids=attachment.ids,
         )
+        move._autopost_bill()
         attachment.write({'res_model': 'account.move', 'res_id': move.id})
         return True
 
+    def _peppol_get_import_journal_and_move_type(self, attachment):
+        self.ensure_one()
+        return self.company_id.peppol_purchase_journal_id, 'in_invoice'
+
     def _peppol_get_new_documents(self):
+        # Context added to not break stable policy: useful to tweak on databases processing large invoices
+        job_count = self._context.get('peppol_crons_job_count') or BATCH_SIZE
+        need_retrigger = False
         params = {
             'domain': {
                 'direction': 'incoming',
@@ -166,6 +169,7 @@ class AccountEdiProxyClientUser(models.Model):
             }
         }
         for edi_user in self:
+            edi_user = edi_user.with_company(edi_user.company_id)
             params['domain']['receiver_identifier'] = edi_user.edi_identification
             try:
                 # request all messages that haven't been acknowledged
@@ -185,85 +189,99 @@ class AccountEdiProxyClientUser(models.Model):
             if not message_uuids:
                 continue
 
-            for uuids in split_every(BATCH_SIZE, message_uuids):
-                proxy_acks = []
-                # retrieve attachments for filtered messages
-                all_messages = edi_user._call_peppol_proxy(
-                    "/api/peppol/1/get_document",
-                    params={'message_uuids': uuids},
+            need_retrigger = need_retrigger or len(message_uuids) > job_count
+            message_uuids = message_uuids[:job_count]
+
+            proxy_acks = []
+            # retrieve attachments for filtered messages
+            all_messages = edi_user._call_peppol_proxy(
+                "/api/peppol/1/get_document",
+                params={'message_uuids': message_uuids},
+            )
+
+            for uuid, content in all_messages.items():
+                enc_key = content["enc_key"]
+                document_content = content["document"]
+                filename = content["filename"] or 'attachment'  # default to attachment, which should not usually happen
+                decoded_document = edi_user._decrypt_data(document_content, enc_key)
+                attachment = self.env["ir.attachment"].create(
+                    {
+                        "name": f"{filename}.xml",
+                        "raw": decoded_document,
+                        "type": "binary",
+                        "mimetype": "application/xml",
+                    }
                 )
+                if edi_user._peppol_import_invoice(attachment, None, content["state"], uuid):
+                    # Only acknowledge when we saved the document somewhere
+                    proxy_acks.append(uuid)
 
-                for uuid, content in all_messages.items():
-                    enc_key = content["enc_key"]
-                    document_content = content["document"]
-                    filename = content["filename"] or 'attachment'  # default to attachment, which should not usually happen
-                    decoded_document = edi_user._decrypt_data(document_content, enc_key)
-                    attachment = self.env["ir.attachment"].create(
-                        {
-                            "name": f"{filename}.xml",
-                            "raw": decoded_document,
-                            "type": "binary",
-                            "mimetype": "application/xml",
-                        }
-                    )
-                    if edi_user._peppol_import_invoice(attachment, None, content["state"], uuid):
-                        # Only acknowledge when we saved the document somewhere
-                        proxy_acks.append(uuid)
-
-                if not tools.config['test_enable']:
-                    self.env.cr.commit()
-                if proxy_acks:
-                    edi_user._call_peppol_proxy(
-                        "/api/peppol/1/ack",
-                        params={'message_uuids': proxy_acks},
-                    )
+            if not tools.config['test_enable']:
+                self.env.cr.commit()
+            if proxy_acks:
+                edi_user._call_peppol_proxy(
+                    "/api/peppol/1/ack",
+                    params={'message_uuids': proxy_acks},
+                )
+        if need_retrigger:
+            self.env.ref('account_peppol.ir_cron_peppol_get_new_documents')._trigger()
 
     def _peppol_get_message_status(self):
+        # Context added to not break stable policy: useful to tweak on databases processing large invoices
+        job_count = self._context.get('peppol_crons_job_count') or BATCH_SIZE
+        need_retrigger = False
         for edi_user in self:
-            edi_user_moves = self.env['account.move'].search([
-                ('peppol_move_state', '=', 'processing'),
-                ('company_id', '=', edi_user.company_id.id),
-            ])
+            edi_user = edi_user.with_company(edi_user.company_id)
+            edi_user_moves = self.env['account.move'].search(
+                [
+                    ('peppol_move_state', '=', 'processing'),
+                    ('company_id', '=', edi_user.company_id.id),
+                ],
+                limit=job_count + 1,
+            )
             if not edi_user_moves:
                 continue
 
-            message_uuids = {move.peppol_message_uuid: move for move in edi_user_moves}
-            for uuids in split_every(BATCH_SIZE, message_uuids.keys()):
-                messages_to_process = edi_user._call_peppol_proxy(
-                    "/api/peppol/1/get_document",
-                    params={'message_uuids': uuids},
-                )
+            need_retrigger = need_retrigger or len(edi_user_moves) > job_count
+            message_uuids = {move.peppol_message_uuid: move for move in edi_user_moves[:job_count]}
+            messages_to_process = edi_user._call_peppol_proxy(
+                "/api/peppol/1/get_document",
+                params={'message_uuids': list(message_uuids.keys())},
+            )
 
-                for uuid, content in messages_to_process.items():
-                    if uuid == 'error':
-                        # this rare edge case can happen if the participant is not active on the proxy side
-                        # in this case we can't get information about the invoices
-                        edi_user_moves.peppol_move_state = 'error'
-                        log_message = _("Peppol error: %s", content['message'])
-                        edi_user_moves._message_log_batch(bodies={move.id: log_message for move in edi_user_moves})
-                        break
+            for uuid, content in messages_to_process.items():
+                if uuid == 'error':
+                    # this rare edge case can happen if the participant is not active on the proxy side
+                    # in this case we can't get information about the invoices
+                    edi_user_moves.peppol_move_state = 'error'
+                    log_message = _("Peppol error: %s", content['message'])
+                    edi_user_moves._message_log_batch(bodies={move.id: log_message for move in edi_user_moves})
+                    break
 
-                    move = message_uuids[uuid]
-                    if content.get('error'):
-                        # "Peppol request not ready" error:
-                        # thrown when the IAP is still processing the message
-                        if content['error'].get('code') == 702:
-                            continue
-
-                        move.peppol_move_state = 'error'
-                        move._message_log(body=_("Peppol error: %s", content['error'].get('data', {}).get('message') or content['error']['message']))
+                move = message_uuids[uuid]
+                if content.get('error'):
+                    # "Peppol request not ready" error:
+                    # thrown when the IAP is still processing the message
+                    if content['error'].get('code') == 702:
                         continue
 
-                    move.peppol_move_state = content['state']
-                    move._message_log(body=_('Peppol status update: %s', content['state']))
+                    move.peppol_move_state = 'error'
+                    move._message_log(body=_("Peppol error: %s", content['error'].get('data', {}).get('message') or content['error']['message']))
+                    continue
 
-                edi_user._call_peppol_proxy(
-                    "/api/peppol/1/ack",
-                    params={'message_uuids': uuids},
-                )
+                move.peppol_move_state = content['state']
+                move._message_log(body=_('Peppol status update: %s', content['state']))
+
+            edi_user._call_peppol_proxy(
+                "/api/peppol/1/ack",
+                params={'message_uuids': list(message_uuids.keys())},
+            )
+        if need_retrigger:
+            self.env.ref('account_peppol.ir_cron_peppol_get_message_status')._trigger()
 
     def _peppol_get_participant_status(self):
         for edi_user in self:
+            edi_user = edi_user.with_company(edi_user.company_id)
             try:
                 proxy_user = edi_user._call_peppol_proxy("/api/peppol/2/participant_status")
             except AccountEdiProxyError as e:
@@ -283,7 +301,7 @@ class AccountEdiProxyClientUser(models.Model):
         self.ensure_one()
         response = self._call_peppol_proxy(endpoint='/api/peppol/1/migrate_peppol_registration')
         if migration_key := response.get('migration_key'):
-            self.company_id.account_peppol_migration_key = migration_key
+            self.company_id.sudo().account_peppol_migration_key = migration_key
 
     def _get_company_details(self):
         self.ensure_one()
@@ -296,7 +314,7 @@ class AccountEdiProxyClientUser(models.Model):
             'peppol_country_code': self.company_id.country_id.code,
             'peppol_phone_number': self.company_id.account_peppol_phone_number,
             'peppol_contact_email': self.company_id.account_peppol_contact_email,
-            'peppol_migration_key': self.company_id.account_peppol_migration_key,
+            'peppol_migration_key': self.company_id.sudo().account_peppol_migration_key,
         }
 
     def _peppol_register_sender(self):
@@ -339,13 +357,13 @@ class AccountEdiProxyClientUser(models.Model):
         self._call_peppol_proxy(
             endpoint='/api/peppol/1/register_sender_as_receiver',
             params={
-                'migration_key': company.account_peppol_migration_key,
+                'migration_key': company.sudo().account_peppol_migration_key,
                 'supported_identifiers': list(company._peppol_supported_document_types())
             },
         )
         # once we sent the migration key over, we don't need it
         # but we need the field for future in case the user decided to migrate away from Odoo
-        company.account_peppol_migration_key = False
+        company.sudo().account_peppol_migration_key = False
         company.account_peppol_proxy_state = 'smp_registration'
 
         self.env.ref('account_peppol.ir_cron_peppol_get_participant_status')._trigger(at=fields.Datetime.now() + timedelta(hours=1))
@@ -364,9 +382,25 @@ class AccountEdiProxyClientUser(models.Model):
         if self.company_id.account_peppol_proxy_state != 'not_registered':
             self._call_peppol_proxy(endpoint='/api/peppol/1/cancel_peppol_registration')
 
-        self.company_id.account_peppol_proxy_state = 'not_registered'
-        self.company_id.account_peppol_migration_key = False
+        self.company_id._reset_peppol_configuration()
         self.unlink()
+
+    def _peppol_deregister_participant_to_sender(self):
+        self.ensure_one()
+
+        if self.company_id.account_peppol_proxy_state == 'receiver':
+            # fetch all documents and message statuses before unlinking the edi user
+            # so that the invoices are acknowledged
+            self._cron_peppol_get_message_status()
+            self._cron_peppol_get_new_documents()
+            if not modules.module.current_test:
+                self.env.cr.commit()
+
+        if self.company_id.account_peppol_proxy_state != 'sender':
+            self._call_peppol_proxy(endpoint='/api/peppol/1/unregister_to_sender')
+
+        self.company_id.account_peppol_proxy_state = 'sender'
+        self.company_id.sudo().account_peppol_migration_key = False
 
     @api.model
     def _peppol_auto_register_services(self, module):

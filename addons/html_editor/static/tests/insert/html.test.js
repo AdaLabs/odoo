@@ -24,7 +24,7 @@ describe("collapsed selection", () => {
                 editor.shared.history.addStep();
             },
             contentAfterEdit:
-                '<p><i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]</p>',
+                '<p>\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]</p>',
             contentAfter: '<p><i class="fa fa-pastafarianism"></i>[]</p>',
         });
     });
@@ -40,7 +40,7 @@ describe("collapsed selection", () => {
                 editor.shared.history.addStep();
             },
             contentAfterEdit:
-                '<p><br></p><i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]',
+                '<p><br></p>\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]',
             contentAfter: '<p><br></p><i class="fa fa-pastafarianism"></i>[]',
             config: { allowInlineAtRoot: true },
         });
@@ -56,7 +56,7 @@ describe("collapsed selection", () => {
                 editor.shared.history.addStep();
             },
             contentAfterEdit:
-                '<p>a<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]b</p>',
+                '<p>a\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]b</p>',
             contentAfter: '<p>a<i class="fa fa-pastafarianism"></i>[]b</p>',
         });
     });
@@ -71,7 +71,7 @@ describe("collapsed selection", () => {
                 editor.shared.history.addStep();
             },
             contentAfterEdit:
-                '<p>a<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]b</p>',
+                '<p>a\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]b</p>',
             contentAfter: '<p>a<i class="fa fa-pastafarianism"></i>[]b</p>',
         });
     });
@@ -164,6 +164,43 @@ describe("collapsed selection", () => {
         });
     });
 
+    test("should fill last empty list item", async () => {
+        await testEditor({
+            contentBefore: "<p>[]<br></p>",
+            stepFunction: async (editor) => {
+                editor.shared.dom.insert(
+                    parseHTML(editor.document, "<p>abc</p><ul><li></li></ul>")
+                );
+                editor.shared.history.addStep();
+            },
+            contentAfter: "<p>abc</p><ul><li>[]<br></li></ul>",
+        });
+    });
+
+    test("should fill first empty list item", async () => {
+        await testEditor({
+            contentBefore: "<p>[]<br></p>",
+            stepFunction: async (editor) => {
+                editor.shared.dom.insert(
+                    parseHTML(editor.document, "<ul><li></li></ul><p>abc</p>")
+                );
+                editor.shared.history.addStep();
+            },
+            contentAfter: "<ul><li><br></li></ul><p>abc[]</p>",
+        });
+    });
+
+    test("should fill first empty heading element", async () => {
+        await testEditor({
+            contentBefore: "<p>[]<br></p>",
+            stepFunction: async (editor) => {
+                editor.shared.dom.insert(parseHTML(editor.document, "<h1></h1><p>abc</p>"));
+                editor.shared.history.addStep();
+            },
+            contentAfter: "<h1><br></h1><p>abc[]</p>",
+        });
+    });
+
     test("never unwrap tables in breakable paragrap", async () => {
         // P elements' content can only be "phrasing" content
         // Adding a table within p is not possible
@@ -175,7 +212,7 @@ describe("collapsed selection", () => {
             parseHTML(editor.document, "<table><tbody><tr><td/></tr></tbody></table>")
         );
         expect(getContent(editor.editable)).toBe(
-            `<p>cont</p><table><tbody><tr><td></td></tr></tbody></table><p>[]ent</p>`
+            `<p>cont</p><table><tbody><tr><td><br></td></tr></tbody></table><p>[]ent</p>`
         );
     });
 
@@ -190,7 +227,7 @@ describe("collapsed selection", () => {
             parseHTML(editor.document, "<table><tbody><tr><td/></tr></tbody></table>")
         );
         expect(getContent(editor.editable)).toBe(
-            `<p class="oe_unbreakable">content[]</p><table><tbody><tr><td></td></tr></tbody></table>`
+            `<p class="oe_unbreakable">content</p><table><tbody><tr><td>[]<br></td></tr></tbody></table>`
         );
     });
 
@@ -208,7 +245,7 @@ describe("collapsed selection", () => {
             parseHTML(editor.document, "<table><tbody><tr><td/></tr></tbody></table>")
         );
         expect(getContent(editor.editable)).toBe(
-            `<div><p class="oe_unbreakable" contenteditable="true"><b class="oe_unbreakable">content[]</b><table><tbody><tr><td></td></tr></tbody></table></p></div>`
+            `<div><p class="oe_unbreakable" contenteditable="true"><b class="oe_unbreakable">content</b><table><tbody><tr><td>[]<br></td></tr></tbody></table></p></div>`
         );
     });
 
@@ -361,7 +398,7 @@ describe("not collapsed selection", () => {
                 );
             },
             contentAfterEdit:
-                '<p><i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]</p>',
+                '<p>\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]</p>',
             contentAfter: '<p><i class="fa fa-pastafarianism"></i>[]</p>',
         });
     });
@@ -376,7 +413,7 @@ describe("not collapsed selection", () => {
                 editor.shared.history.addStep();
             },
             contentAfterEdit:
-                '<p>a<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>[]c</p>',
+                '<p>a\ufeff<i class="fa fa-pastafarianism" contenteditable="false">\u200b</i>\ufeff[]c</p>',
             contentAfter: '<p>a<i class="fa fa-pastafarianism"></i>[]c</p>',
         });
     });
@@ -429,8 +466,8 @@ describe("not collapsed selection", () => {
             },
             contentAfter: unformat(
                 `<table><tbody>
-                        <tr><td>cd</td><td><span class="a">TEST</span>[]</td><td>gh</td></tr>
-                        <tr><td>ij</td><td><br></td><td>mn</td></tr>
+                        <tr><td>cd</td><td><p><span class="a">TEST</span>[]</p></td><td>gh</td></tr>
+                        <tr><td>ij</td><td><p><br></p></td><td>mn</td></tr>
                         <tr><td>op</td><td>qr</td><td>st</td></tr>
                     </tbody></table>`
             ),
